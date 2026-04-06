@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import Image from "next/image";
-import { Models } from "node-appwrite";
 import { actionsDropdownItems } from "@/constants";
 import Link from "next/link";
 import { constructDownloadUrl } from "@/lib/utils";
@@ -31,7 +30,7 @@ import {
 import { usePathname } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 
-const ActionDropdown = ({ file }: { file: Models.Document }) => {
+const ActionDropdown = ({ file }: { file: CustomFile }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
@@ -62,7 +61,8 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
         deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path }),
     };
 
-    success = await actions[action.value as keyof typeof actions]();
+    const result = await actions[action.value as keyof typeof actions]();
+    if (result && result.status === "success") success = true;
 
     if (success) closeAllModals();
 
@@ -72,13 +72,13 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const handleRemoveUser = async (email: string) => {
     const updatedEmails = emails.filter((e) => e !== email);
 
-    const success = await updateFileUsers({
+    const result = await updateFileUsers({
       fileId: file.$id,
       emails: updatedEmails,
       path,
     });
 
-    if (success) setEmails(updatedEmails);
+    if (result && result.status === "success") setEmails(updatedEmails);
     closeAllModals();
   };
 

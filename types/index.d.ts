@@ -69,8 +69,31 @@ declare interface ThumbnailProps {
   imageClassName?: string;
 }
 
+declare interface User {
+  $id: string;
+  fullName: string;
+  avatar: string;
+  email: string;
+  accountId: string;
+}
+
+declare interface CustomFile {
+  $id: string;
+  name: string;
+  url: string;
+  type: string;
+  extension: string;
+  size: number;
+  $createdAt: string;
+  $updatedAt: string;
+  owner: User;
+  users: string[]; 
+  accountId: string;
+  bucketFileId: string;
+}
+
 declare interface ShareInputProps {
-  file: Models.Document;
+  file: CustomFile;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemove: (email: string) => void;
 }
