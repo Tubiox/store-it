@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type FormType = "sign-in" | "sign-up";
 
@@ -28,6 +29,7 @@ const formSchema = z.object({
 const AuthForm = ({ type }: { type: FormType }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,15 +44,11 @@ const AuthForm = ({ type }: { type: FormType }) => {
     setIsLoading(true);
     setErrorMessage("");
 
-
     try {
-      const BASE_URL = "http://127.0.0.1:8000";
-
       const url =
         type === "sign-up"
           ? "http://127.0.0.1:8000/auth/signup"
           : "http://127.0.0.1:8000/auth/login";
-
 
       const body =
         type === "sign-up"
@@ -72,10 +70,12 @@ const AuthForm = ({ type }: { type: FormType }) => {
       }
 
       if (type === "sign-in") {
-        localStorage.setItem("token", data.access_token);
-        alert("Logged in successfully");
+        // Store token in a cookie accessible to the Next.js server
+        document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60}; SameSite=Lax`;
+        router.push("/");
+        router.refresh();
       } else {
-        alert("Signup successful");
+        router.push("/sign-in");
       }
 
     } catch (err: any) {

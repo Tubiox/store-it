@@ -1,17 +1,25 @@
-from passlib.context import CryptContext
+import bcrypt
+import hashlib
 from jose import jwt
 from datetime import datetime, timedelta
 
 SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def _prep_password(password: str) -> bytes:
+    # Pre-hash with SHA-256 to bypass bcrypt's 72 byte limit safely
+    return hashlib.sha256(password.encode('utf-8')).hexdigest().encode('utf-8')
 
-def hash_password(password: str):
-    return pwd_context.hash(password)
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(_prep_password(password), salt)
+    return hashed.decode('utf-8')
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(
+        _prep_password(plain_password), 
+        hashed_password.encode('utf-8')
+    )
 
 def create_access_token(data: dict):
     to_encode = data.copy()

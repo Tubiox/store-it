@@ -1,20 +1,35 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+
+const BACKEND_URL = "http://127.0.0.1:8000";
 
 export const getCurrentUser = async () => {
-  // Mock data as fallback. Connect this to your python backend later.
-  return {
-    $id: "dummy-id",
-    accountId: "dummy-account-id",
-    fullName: "User",
-    email: "user@example.com",
-    avatar: "https://i.pravatar.cc/150",
-  };
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) return null;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export const signOutUser = async () => {
-  // Connect this to your python backend or handle token clearing
+  const cookieStore = await cookies();
+  cookieStore.delete("token");
   redirect("/sign-in");
 };
 
