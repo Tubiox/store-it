@@ -47,8 +47,8 @@ const AuthForm = ({ type }: { type: FormType }) => {
     try {
       const url =
         type === "sign-up"
-          ? "http://127.0.0.1:8000/auth/signup"
-          : "http://127.0.0.1:8000/auth/login";
+          ? "http://localhost:8000/auth/signup"
+          : "http://localhost:8000/auth/login";
 
       const body =
         type === "sign-up"

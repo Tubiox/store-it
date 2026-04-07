@@ -174,11 +174,11 @@ export const getFileIcon = (
 
 // BACKEND URL UTILS
 export const constructFileUrl = (bucketFileId: string) => {
-  return `http://127.0.0.1:8000/files/${bucketFileId}/view`;
+  return `http://localhost:8000/files/${bucketFileId}/view`;
 };
 
 export const constructDownloadUrl = (bucketFileId: string) => {
-  return `http://127.0.0.1:8000/files/${bucketFileId}/download`;
+  return `http://localhost:8000/files/${bucketFileId}/download`;
 };
 
 // DASHBOARD UTILS

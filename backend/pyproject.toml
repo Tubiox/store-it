@@ -1,0 +1,13 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "StoreIt Python backend"
+requires-python = ">=3.13"
+dependencies = [
+    "bcrypt>=5.0.0",
+    "fastapi>=0.135.3",
+    "pymongo>=4.16.0",
+    "python-jose>=3.5.0",
+    "uvicorn>=0.44.0",
+]
+
