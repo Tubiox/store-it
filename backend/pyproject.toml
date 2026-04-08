@@ -5,9 +5,14 @@ description = "StoreIt Python backend"
 requires-python = ">=3.13"
 dependencies = [
     "bcrypt>=5.0.0",
+    "boto3>=1.42.84",
+    "cryptography>=46.0.7",
     "fastapi>=0.135.3",
+    "minio>=7.2.20",
     "pymongo>=4.16.0",
+    "python-dotenv>=1.2.2",
     "python-jose>=3.5.0",
+    "python-multipart>=0.0.24",
     "uvicorn>=0.44.0",
 ]
 
