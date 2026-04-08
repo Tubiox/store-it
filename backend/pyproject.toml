@@ -2,7 +2,7 @@
 name = "backend"
 version = "0.1.0"
 description = "StoreIt Python backend"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "bcrypt>=5.0.0",
     "boto3>=1.42.84",

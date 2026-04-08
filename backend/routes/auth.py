@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import Depends,APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from database import users_collection
 from auth_utils import hash_password, verify_password, create_access_token
@@ -70,3 +70,23 @@ def get_me(authorization: str = Header(None)):
         "email": email,
         "avatar": user.get("avatar", "https://i.pravatar.cc/150"),
     }
+
+def get_current_user(authorization: str = Header(...)):
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid auth header")
+
+    token = authorization.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = users_collection.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
