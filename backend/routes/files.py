@@ -40,17 +40,37 @@ async def upload(file: UploadFile = File(...), current_user=Depends(get_current_
         "file_id": str(file_id)
     }
 
-@router.get("/download/{filename}")
-async def download(filename: str):
-    key = f"uploads/{filename}"
+@router.get("/download/{file_id}")
+async def download(file_id: str, current_user=Depends(get_current_user)):
+    file = db.files.find_one({"_id": ObjectId(file_id)})
 
-    encrypted_data = download_file(key)
+    if not file:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    if file["owner_id"] != current_user["_id"]:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    encrypted_data = download_file(file["storage_key"])
     decrypted_data = decrypt(encrypted_data)
 
     return Response(
         content=decrypted_data,
-        media_type="application/octet-stream",
+        media_type=file["content_type"],
         headers={
-            "Content-Disposition": f"attachment; filename={filename}"
+            "Content-Disposition": f"attachment; filename={file['filename']}"
         }
     )
+
+
+@router.get("/files")
+def get_files(current_user=Depends(get_current_user)):
+    files = list(db.files.find({
+        "owner_id": current_user["_id"],
+        "is_deleted": False
+    }))
+
+    # convert ObjectId to string
+    for file in files:
+        file["_id"] = str(file["_id"])
+
+    return files
