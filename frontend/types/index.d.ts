@@ -78,7 +78,7 @@ declare interface User {
 }
 
 declare interface CustomFile {
-  $id: string;
+  _id: string;
   name: string;
   url: string;
   type: string;

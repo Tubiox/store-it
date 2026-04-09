@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -9,44 +8,69 @@ import { getFiles } from "@/lib/actions/file.actions";
 import Thumbnail from "@/components/Thumbnail";
 import FormattedDateTime from "@/components/FormattedDateTime";
 import { useDebounce } from "use-debounce";
+
 const Search = () => {
   const [query, setQuery] = useState("");
-  const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("query") || "";
   const [results, setResults] = useState<CustomFile[]>([]);
   const [open, setOpen] = useState(false);
+
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("query") || "";
+
   const router = useRouter();
   const path = usePathname();
+
   const [debouncedQuery] = useDebounce(query, 300);
 
+  // =======================
+  // FETCH FILES
+  // =======================
   useEffect(() => {
     const fetchFiles = async () => {
       if (debouncedQuery.length === 0) {
         setResults([]);
         setOpen(false);
-        return router.push(path.replace(searchParams.toString(), ""));
+        return;
       }
 
-      const files = await getFiles({ types: [], searchText: debouncedQuery });
-      setResults(files.documents);
-      setOpen(true);
+      try {
+        const files = await getFiles(); // ✅ FIXED (no params)
+
+        // 🔍 Filter on frontend
+        const filtered = files.documents.filter((file: any) =>
+          file.filename.toLowerCase().includes(debouncedQuery.toLowerCase())
+        );
+
+        setResults(filtered);
+        setOpen(true);
+      } catch (err) {
+        console.error("Search error:", err);
+      }
     };
 
     fetchFiles();
   }, [debouncedQuery]);
 
+  // =======================
+  // RESET INPUT
+  // =======================
   useEffect(() => {
     if (!searchQuery) {
       setQuery("");
     }
   }, [searchQuery]);
 
-  const handleClickItem = (file: CustomFile) => {
+  // =======================
+  // CLICK ITEM
+  // =======================
+  const handleClickItem = (file: any) => {
     setOpen(false);
     setResults([]);
 
     router.push(
-      `/${file.type === "video" || file.type === "audio" ? "media" : file.type + "s"}?query=${query}`,
+      `/${file.content_type?.includes("video") || file.content_type?.includes("audio")
+        ? "media"
+        : "files"}?query=${query}`
     );
   };
 
@@ -59,6 +83,7 @@ const Search = () => {
           width={24}
           height={24}
         />
+
         <Input
           value={query}
           placeholder="Search..."
@@ -69,26 +94,27 @@ const Search = () => {
         {open && (
           <ul className="search-result">
             {results.length > 0 ? (
-              results.map((file) => (
+              results.map((file: any) => (
                 <li
+                  key={file._id}
                   className="flex items-center justify-between"
-                  key={file.$id}
                   onClick={() => handleClickItem(file)}
                 >
                   <div className="flex cursor-pointer items-center gap-4">
                     <Thumbnail
-                      type={file.type}
-                      extension={file.extension}
-                      url={file.url}
+                      type={file.content_type}
+                      extension={file.filename?.split(".").pop()}
+                      url="" // optional
                       className="size-9 min-w-9"
                     />
+
                     <p className="subtitle-2 line-clamp-1 text-light-100">
-                      {file.name}
+                      {file.filename}
                     </p>
                   </div>
 
                   <FormattedDateTime
-                    date={file.$createdAt}
+                    date={file.uploaded_at}
                     className="caption line-clamp-1 text-light-200"
                   />
                 </li>

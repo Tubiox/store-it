@@ -1,14 +1,16 @@
 "use server";
 
-
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
-const BACKEND_URL = "http://localhost:8000";
+const BACKEND_URL = "http://127.0.0.1:8000";
 
+// =======================
+// GET CURRENT USER
+// =======================
 export const getCurrentUser = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+const cookieStore = await cookies();
+const token = cookieStore.get("token")?.value;
 
   if (!token) return null;
 
@@ -28,24 +30,66 @@ export const getCurrentUser = async () => {
   }
 };
 
+// =======================
+// SIGN IN
+// =======================
+export const signInUser = async (params: {
+  email: string;
+  password: string;
+}) => {
+  const res = await fetch(`${BACKEND_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.detail || "Login failed");
+  }
+
+  //  Save token in cookie
+  const cookieStore = await cookies();
+
+cookieStore.set("token", data.access_token, {
+  httpOnly: false,
+  path: "/",
+});
+  return data;
+};
+
+// =======================
+// SIGN UP
+// =======================
+export const createAccount = async (params: {
+  email: string;
+  password: string;
+}) => {
+  const res = await fetch(`${BACKEND_URL}/auth/signup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.detail || "Signup failed");
+  }
+
+  return data;
+};
+
+// =======================
+// SIGN OUT
+// =======================
 export const signOutUser = async () => {
   const cookieStore = await cookies();
-  cookieStore.delete("token");
+cookieStore.delete("token");
   redirect("/sign-in");
-};
-
-export const createAccount = async (params: any) => {
-  return { accountId: "dummy-id" };
-};
-
-export const signInUser = async (params: any) => {
-  return { accountId: "dummy-id" };
-};
-
-export const verifySecret = async (params: any) => {
-  return { sessionId: "dummy-session-id" };
-};
-
-export const sendEmailOTP = async (params: any) => {
-  return "dummy-id";
 };

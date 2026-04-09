@@ -24,8 +24,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   deleteFile,
-  renameFile,
-  updateFileUsers,
 } from "@/lib/actions/file.actions";
 import { usePathname } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
@@ -54,11 +52,8 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
     let success = false;
 
     const actions = {
-      rename: () =>
-        renameFile({ fileId: file.$id, name, extension: file.extension, path }),
-      share: () => updateFileUsers({ fileId: file.$id, emails, path }),
       delete: () =>
-        deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path }),
+        deleteFile(file._id),
     };
 
     const result = await actions[action.value as keyof typeof actions]();
@@ -68,20 +63,6 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
 
     setIsLoading(false);
   };
-
-  const handleRemoveUser = async (email: string) => {
-    const updatedEmails = emails.filter((e) => e !== email);
-
-    const result = await updateFileUsers({
-      fileId: file.$id,
-      emails: updatedEmails,
-      path,
-    });
-
-    if (result && result.status === "success") setEmails(updatedEmails);
-    closeAllModals();
-  };
-
   const renderDialogContent = () => {
     if (!action) return null;
 
@@ -98,14 +79,6 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-            />
-          )}
-          {value === "details" && <FileDetails file={file} />}
-          {value === "share" && (
-            <ShareInput
-              file={file}
-              onInputChange={setEmails}
-              onRemove={handleRemoveUser}
             />
           )}
           {value === "delete" && (

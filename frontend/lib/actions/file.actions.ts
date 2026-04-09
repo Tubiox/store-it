@@ -1,48 +1,85 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
-export const uploadFile = async (params: any) => {
-  // Connect to Python backend instead of Appwrite
-  // revalidatePath(params.path);
-  return { status: "success" };
+const BACKEND_URL = "http://127.0.0.1:8000";
+
+// =======================
+// UPLOAD FILE
+// =======================
+export const uploadFile = async (params: { file: File }) => {
+const cookieStore = await cookies();
+const token = cookieStore.get("token")?.value;
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
+
+  const formData = new FormData();
+  formData.append("file", params.file);
+
+  const res = await fetch(`${BACKEND_URL}/upload`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.detail || "Upload failed");
+  }
+
+  return data;
 };
 
-export const getFiles = async (params: any) => {
-  // Return dummy data or fetch from Python backend
+// =======================
+// GET FILES
+// =======================
+export const getFiles = async () => {
+const cookieStore = await cookies();
+const token = cookieStore.get("token")?.value;
+  if (!token) return { documents: [], total: 0 };
+
+  const res = await fetch(`${BACKEND_URL}/files`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return { documents: [], total: 0 };
+
+  const data = await res.json();
+
   return {
-    documents: [],
-    total: 0
+    documents: data,
+    total: data.length,
   };
 };
 
-export const renameFile = async (params: any) => {
-  // Connect to Python backend
-  // revalidatePath(params.path);
+// =======================
+// DELETE FILE (optional later)
+// =======================
+export const deleteFile = async (fileId: string) => {
+
+const cookieStore = await cookies();
+const token = cookieStore.get("token")?.value;
+
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${BACKEND_URL}/delete/${fileId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.detail || "Delete failed");
+  }
+
   return { status: "success" };
 };
-
-export const updateFileUsers = async (params: any) => {
-  // Connect to Python backend
-  // revalidatePath(params.path);
-  return { status: "success" };
-};
-
-export const deleteFile = async (params: any) => {
-  // Connect to Python backend
-  // revalidatePath(params.path);
-  return { status: "success" };
-};
-
-export async function getTotalSpaceUsed() {
-  // Connect to Python backend
-  return {
-    image: { size: 0, latestDate: "" },
-    document: { size: 0, latestDate: "" },
-    video: { size: 0, latestDate: "" },
-    audio: { size: 0, latestDate: "" },
-    other: { size: 0, latestDate: "" },
-    used: 0,
-    all: 2 * 1024 * 1024 * 1024,
-  };
-}

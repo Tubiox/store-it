@@ -9,14 +9,11 @@ import Thumbnail from "@/components/Thumbnail";
 import { MAX_FILE_SIZE } from "@/constants";
 import { useToast } from "@/hooks/use-toast";
 
-// helper to get token from cookie
-const getTokenFromCookie = () => {
-  const cookies = document.cookie.split(";");
-  for (let cookie of cookies) {
-    const [key, value] = cookie.trim().split("=");
-    if (key === "token") return value;
-  }
-  return null;
+const getToken = () => {
+  return document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("token="))
+    ?.split("=")[1];
 };
 
 interface Props {
@@ -30,24 +27,31 @@ const FileUploader = ({ className }: Props) => {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
 
-    const token = getTokenFromCookie();
+    const token = getToken();
 
-    const uploadPromises = acceptedFiles.map(async (file) => {
-      // file size check
+    if (!token) {
+      toast({
+        description: "You are not logged in",
+        className: "error-toast",
+      });
+      return;
+    }
+
+    for (const file of acceptedFiles) {
+      // size check
       if (file.size > MAX_FILE_SIZE) {
-        setFiles((prev) => prev.filter((f) => f.name !== file.name));
-
-        return toast({
-          description: `${file.name} is too large. Max 50MB.`,
+        toast({
+          description: `${file.name} is too large`,
           className: "error-toast",
         });
+        continue;
       }
 
       try {
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("http://localhost:8000/upload", {
+        const res = await fetch("http://127.0.0.1:8000/upload", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,37 +61,29 @@ const FileUploader = ({ className }: Props) => {
 
         const data = await res.json();
 
-        if (!res.ok) {
-          throw new Error(data.detail || "Upload failed");
-        }
+        if (!res.ok) throw new Error(data.detail);
 
         console.log("Uploaded:", data);
 
-        // remove from preview after success
+        toast({
+          description: `${file.name} uploaded successfully`,
+        });
+
+        // remove from UI
         setFiles((prev) => prev.filter((f) => f.name !== file.name));
 
-      } catch (error: any) {
-        console.error(error);
+      } catch (err: any) {
+        console.error(err);
 
         toast({
-          description: error.message || "Upload failed",
+          description: err.message || "Upload failed",
           className: "error-toast",
         });
       }
-    });
-
-    await Promise.all(uploadPromises);
-  }, []);
+    }
+  }, [toast]);
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
-
-  const handleRemoveFile = (
-    e: React.MouseEvent<HTMLImageElement>,
-    fileName: string
-  ) => {
-    e.stopPropagation();
-    setFiles((prev) => prev.filter((file) => file.name !== fileName));
-  };
 
   return (
     <div {...getRootProps()} className="cursor-pointer">
@@ -114,24 +110,8 @@ const FileUploader = ({ className }: Props) => {
                     url={convertFileToUrl(file)}
                   />
 
-                  <div className="preview-item-name">
-                    {file.name}
-                    <Image
-                      src="/assets/icons/file-loader.gif"
-                      width={80}
-                      height={26}
-                      alt="Loader"
-                    />
-                  </div>
+                  <p>{file.name}</p>
                 </div>
-
-                <Image
-                  src="/assets/icons/remove.svg"
-                  width={24}
-                  height={24}
-                  alt="Remove"
-                  onClick={(e) => handleRemoveFile(e, file.name)}
-                />
               </li>
             );
           })}
