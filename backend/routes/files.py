@@ -93,16 +93,20 @@ async def download(
 @router.get("/files")
 def get_files(current_user=Depends(get_current_user)):
     try:
-     files = list(db.files.find({
-    "owner_id": current_user["_id"],
-    "is_deleted": False
-}))
+        files = list(db.files.find({
+            "owner_id": current_user["_id"],
+            "is_deleted": False
+        }))
 
-
-
-     for file in files:
+        # Convert ObjectId to string
+        for file in files:
             file["_id"] = str(file["_id"])
-            return files
+            file["owner_id"] = str(file["owner_id"])
+
+        #  ALWAYS return structured response
+        return {
+            "documents": files
+        }
 
     except Exception as e:
         print("FETCH FILES ERROR:", str(e))

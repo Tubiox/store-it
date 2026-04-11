@@ -18,15 +18,24 @@ const [loading, setLoading] = useState(true);
   }
 
   const fetchFiles = async () => {
-    try {
-      const data = await fetchWithAuth("/files");
-      setFiles(data.documents || []);
-    } catch (err) {
-      console.error("Error fetching files:", err);
-    } finally {
-      setLoading(false);
+  try {
+    const data = await fetchWithAuth("/files");
+
+    console.log("API RESPONSE:", data);
+
+    if (!data) {
+      setFiles([]);
+      return;
     }
-  };
+
+    setFiles(Array.isArray(data) ? data : data.documents || []);
+  } catch (err) {
+    console.error(err);
+    setFiles([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   fetchFiles();
 }, []);

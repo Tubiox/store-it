@@ -1,4 +1,4 @@
-/* "use server";
+"use server";
 
 import { cookies } from "next/headers";
 
@@ -87,4 +87,3 @@ const token = cookieStore.get("token")?.value;
 
   return { status: "success" };
 };
-*/
