@@ -49,14 +49,14 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
     setIsLoading(true);
     let success = false;
 
-const actions = {
-  delete: async () => {
-    await fetchWithAuth(`/delete/${file._id}`, {
-      method: "DELETE",
-    });
-    return { status: "success" };
-  },
-};
+    const actions = {
+      delete: async () => {
+        await fetchWithAuth(`/delete/${file._id}`, {
+          method: "DELETE",
+        });
+        return { status: "success" };
+      },
+    };
     const result = await actions[action.value as keyof typeof actions]();
     if (result && result.status === "success") success = true;
 
@@ -145,31 +145,31 @@ const actions = {
               }}
             >
               {actionItem.value === "download" ? (
-  <a
-    href={`http://127.0.0.1:8000/download/${file._id}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="flex items-center gap-2"
-  >
-    <Image
-      src={actionItem.icon}
-      alt={actionItem.label}
-      width={30}
-      height={30}
-    />
-    {actionItem.label}
-  </a>
-) : (
-  <div className="flex items-center gap-2">
-    <Image
-      src={actionItem.icon}
-      alt={actionItem.label}
-      width={30}
-      height={30}
-    />
-    {actionItem.label}
-  </div>
-)}
+                <a
+                  href={`http://127.0.0.1:8000/download/${file._id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  <Image
+                    src={actionItem.icon}
+                    alt={actionItem.label}
+                    width={30}
+                    height={30}
+                  />
+                  {actionItem.label}
+                </a>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Image
+                    src={actionItem.icon}
+                    alt={actionItem.label}
+                    width={30}
+                    height={30}
+                  />
+                  {actionItem.label}
+                </div>
+              )}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

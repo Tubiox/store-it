@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 declare type FileType = "document" | "image" | "video" | "audio" | "other";
 
 declare interface ActionType {
@@ -88,13 +86,13 @@ declare interface CustomFile {
   owner_id: string;
   file_size?: number;
 
-  // derived fields (for UI compatibility)
+
   name?: string;
   extension?: string;
   size?: number;
   url?: string;
 
-  // optional UI fields (to avoid crashes)
+
   owner?: {
     fullName: string;
   };

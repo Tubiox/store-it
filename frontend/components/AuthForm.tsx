@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 
 type FormType = "sign-in" | "sign-up";
 
@@ -29,7 +29,6 @@ const formSchema = z.object({
 const AuthForm = ({ type }: { type: FormType }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,58 +39,64 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
 
-const onSubmit = async (values: z.infer<typeof formSchema>) => {
-  setIsLoading(true);
-  setErrorMessage("");
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    setErrorMessage("");
 
-  try {
-    const url =
-      type === "sign-up"
-        ? "http://localhost:8000/auth/signup"
-        : "http://localhost:8000/auth/login";
+    try {
+      const url =
+        type === "sign-up"
+          ? "http://127.0.0.1:8000/auth/signup"
+          : "http://127.0.0.1:8000/auth/login";
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: values.email,
-        password: values.password,
-      }),
-    });
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    console.log("LOGIN RESPONSE:", data);
+      console.log("AUTH RESPONSE:", data);
 
-    if (!res.ok) {
-      throw new Error(data.detail || "Something went wrong");
-    }
+      if (!res.ok) {
+        throw new Error(data.detail || "Something went wrong");
+      }
 
-    // ✅ LOGIN FLOW
-    if (type === "sign-in") {
-      const token = data.access_token;
+      // SIGN IN FLOW
+      if (type === "sign-in") {
+        const token = data.access_token;
 
-      if (!token) {
-        alert("No token received");
+        if (!token) {
+          throw new Error("No token received");
+        }
+
+        localStorage.setItem("token", token);
+
+        console.log("TOKEN SAVED:", token);
+
+
+        window.location.href = "/";
+
         return;
       }
-    localStorage.setItem("token", token);
-    router.push("/");
-    
-    } else {
-      // signup → go to login
-      window.location.href = "/sign-in";
-    }
 
-  } catch (err: any) {
-    console.error("AUTH ERROR:", err);
-    setErrorMessage(err.message || "Error occurred");
-  } finally {
-    setIsLoading(false);
-  }
-};
+      //SIGN UP FLOW → go to login
+      window.location.href = "/sign-in";
+
+    } catch (err: any) {
+      console.error("AUTH ERROR:", err);
+      setErrorMessage(err.message || "Error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="auth-form">

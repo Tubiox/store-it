@@ -8,7 +8,6 @@ import FileUploader from "@/components/FileUploader";
 
 const Header = () => {
   const handleLogout = () => {
-    // ❌ remove cookie
     document.cookie = "token=; path=/; max-age=0";
     window.location.href = "/sign-in";
   };

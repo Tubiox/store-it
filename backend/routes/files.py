@@ -105,9 +105,9 @@ def get_files(current_user=Depends(get_current_user)):
 
         #  ALWAYS return structured response
         return {
-            "documents": files
-        }
-
+    "documents": files,
+    "total": len(files)
+}
     except Exception as e:
         print("FETCH FILES ERROR:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
