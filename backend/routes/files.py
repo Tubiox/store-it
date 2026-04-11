@@ -17,27 +17,22 @@ async def upload(
     current_user=Depends(get_current_user)
 ):
     try:
-        # Read file
         content = await file.read()
 
         if not content:
             raise HTTPException(status_code=400, detail="Empty file")
 
-        # Encrypt file
+        print("Original size:", len(content))
+
         encrypted_data = encrypt(content)
 
-        # Generate unique file ID
+        print("Encrypted size:", len(encrypted_data))
+
         file_id = ObjectId()
         storage_key = f"{current_user['_id']}/{file_id}.enc"
 
-        print("Uploading to MinIO:", storage_key)  # DEBUG
-
-        # Upload to MinIO
         upload_file(encrypted_data, storage_key)
 
-        print("Upload successful")  # DEBUG
-
-        # Save metadata in DB
         file_data = {
             "_id": file_id,
             "owner_id": current_user["_id"],
@@ -46,8 +41,6 @@ async def upload(
             "file_size": len(content),
             "content_type": file.content_type,
             "uploaded_at": datetime.utcnow(),
-            "encryption": {"algorithm": "Fernet"},
-            "hash": "temp",
             "is_deleted": False
         }
 
@@ -59,9 +52,8 @@ async def upload(
         }
 
     except Exception as e:
-        print("UPLOAD ERROR:", str(e))  # DEBUG
+        print("UPLOAD ERROR:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
-
 
 # DOWNLOAD FILE
 @router.get("/download/{file_id}")
@@ -101,16 +93,16 @@ async def download(
 @router.get("/files")
 def get_files(current_user=Depends(get_current_user)):
     try:
-        files = list(db.files.find({
-            "owner_id": current_user["_id"],
-            "is_deleted": False
-        }))
+     files = list(db.files.find({
+    "owner_id": current_user["_id"],
+    "is_deleted": False
+}))
 
-        # Convert ObjectId → string
-        for file in files:
+
+
+     for file in files:
             file["_id"] = str(file["_id"])
-
-        return files
+            return files
 
     except Exception as e:
         print("FETCH FILES ERROR:", str(e))

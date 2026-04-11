@@ -1,40 +1,66 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Sort from "@/components/Sort";
-import { getFiles } from "@/lib/actions/file.actions";
 import Card from "@/components/Card";
-import { getFileTypesParams } from "@/lib/utils";
+import { fetchWithAuth } from "@/lib/api";
 
-const Page = async ({ searchParams, params }: SearchParamProps) => {
-  const type = ((await params)?.type as string) || "";
-  const searchText = ((await searchParams)?.query as string) || "";
-  const sort = ((await searchParams)?.sort as string) || "";
+const Page = () => {
+  const [files, setFiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const types = getFileTypesParams(type) as FileType[];
+  useEffect(() => {
+    const loadFiles = async () => {
+      try {
+        const data = await fetchWithAuth("/files");
 
-  const files = await getFiles();
+        const normalized = data.map((file: any) => ({
+          ...file,
+          name: file.filename,
+          extension: file.filename?.split(".").pop(),
+          size: file.file_size,
+          url: "",
+          $createdAt: file.uploaded_at,
+          $updatedAt: file.uploaded_at,
+          owner: { fullName: "You" },
+          users: [],
+        }));
+
+        setFiles(normalized);
+      } catch (err) {
+        console.error("Error fetching files:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFiles();
+  }, []);
 
   return (
     <div className="page-container">
       <section className="w-full">
-        <h1 className="h1 capitalize">{type}</h1>
+        <h1 className="h1 capitalize">Your Files</h1>
 
         <div className="total-size-section">
           <p className="body-1">
-            Total: <span className="h5">0 MB</span>
+            Total: <span className="h5">{files.length}</span>
           </p>
 
           <div className="sort-container">
-            <p className="body-1 hidden text-light-200 sm:block">Sort by:</p>
-
+            <p className="body-1 hidden text-light-200 sm:block">
+              Sort by:
+            </p>
             <Sort />
           </div>
         </div>
       </section>
 
-      {/* Render the files */}
-      {files.total > 0 ? (
+      {loading ? (
+        <p className="empty-list">Loading...</p>
+      ) : files && files.length > 0 ? (
         <section className="file-list">
-          {files.documents.map((file: CustomFile) => (
+          {files.map((file: any) => (
             <Card key={file._id} file={file} />
           ))}
         </section>

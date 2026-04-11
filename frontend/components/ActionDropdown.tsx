@@ -20,11 +20,9 @@ import Image from "next/image";
 import { actionsDropdownItems } from "@/constants";
 import Link from "next/link";
 import { constructDownloadUrl } from "@/lib/utils";
+import { fetchWithAuth } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  deleteFile,
-} from "@/lib/actions/file.actions";
 import { usePathname } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 
@@ -32,7 +30,7 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
-  const [name, setName] = useState(file.name);
+  const [name, setName] = useState(file.filename);
   const [isLoading, setIsLoading] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
 
@@ -42,7 +40,7 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
     setIsModalOpen(false);
     setIsDropdownOpen(false);
     setAction(null);
-    setName(file.name);
+    setName(file.filename);
     //   setEmails([]);
   };
 
@@ -51,11 +49,14 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
     setIsLoading(true);
     let success = false;
 
-    const actions = {
-      delete: () =>
-        deleteFile(file._id),
-    };
-
+const actions = {
+  delete: async () => {
+    await fetchWithAuth(`/delete/${file._id}`, {
+      method: "DELETE",
+    });
+    return { status: "success" };
+  },
+};
     const result = await actions[action.value as keyof typeof actions]();
     if (result && result.status === "success") success = true;
 
@@ -84,7 +85,7 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
           {value === "delete" && (
             <p className="delete-confirmation">
               Are you sure you want to delete{` `}
-              <span className="delete-file-name">{file.name}</span>?
+              <span className="delete-file-name">{file.filename}</span>?
             </p>
           )}
         </DialogHeader>
@@ -124,7 +125,7 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuLabel className="max-w-[200px] truncate">
-            {file.name}
+            {file.filename}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {actionsDropdownItems.map((actionItem) => (
@@ -144,30 +145,31 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
               }}
             >
               {actionItem.value === "download" ? (
-                <Link
-                  href={constructDownloadUrl(file.bucketFileId)}
-                  download={file.name}
-                  className="flex items-center gap-2"
-                >
-                  <Image
-                    src={actionItem.icon}
-                    alt={actionItem.label}
-                    width={30}
-                    height={30}
-                  />
-                  {actionItem.label}
-                </Link>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Image
-                    src={actionItem.icon}
-                    alt={actionItem.label}
-                    width={30}
-                    height={30}
-                  />
-                  {actionItem.label}
-                </div>
-              )}
+  <a
+    href={`http://127.0.0.1:8000/download/${file._id}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center gap-2"
+  >
+    <Image
+      src={actionItem.icon}
+      alt={actionItem.label}
+      width={30}
+      height={30}
+    />
+    {actionItem.label}
+  </a>
+) : (
+  <div className="flex items-center gap-2">
+    <Image
+      src={actionItem.icon}
+      alt={actionItem.label}
+      width={30}
+      height={30}
+    />
+    {actionItem.label}
+  </div>
+)}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

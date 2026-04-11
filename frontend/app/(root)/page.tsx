@@ -3,32 +3,33 @@
 import { useEffect, useState } from "react";
 import { Thumbnail } from "@/components/Thumbnail";
 import { FormattedDateTime } from "@/components/FormattedDateTime";
+import { fetchWithAuth } from "@/lib/api";
 
 const Dashboard = () => {
-  const [files, setFiles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const [files, setFiles] = useState<any[]>([]);
+const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        const res = await fetch("http://127.0.0.1:8000/files", {
-          credentials: "include", 
-        });
+  const token = localStorage.getItem("token");
 
-        const data = await res.json();
+  if (!token) {
+    window.location.href = "/sign-in";
+    return;
+  }
 
-        if (!res.ok) throw new Error(data.detail);
+  const fetchFiles = async () => {
+    try {
+      const data = await fetchWithAuth("/files");
+      setFiles(data.documents || []);
+    } catch (err) {
+      console.error("Error fetching files:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setFiles(data);
-      } catch (err) {
-        console.error("Error fetching files:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFiles();
-  }, []);
+  fetchFiles();
+}, []);
 
   return (
     <div className="dashboard-container">
@@ -37,7 +38,7 @@ const Dashboard = () => {
 
         {loading ? (
           <p className="empty-list">Loading...</p>
-        ) : files.length > 0 ? (
+        ) : files && files.length > 0 ? (
           <ul className="mt-5 flex flex-col gap-5">
             {files.map((file) => (
               <div key={file._id} className="flex items-center gap-3">

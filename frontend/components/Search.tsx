@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { getFiles } from "@/lib/actions/file.actions";
 import Thumbnail from "@/components/Thumbnail";
 import FormattedDateTime from "@/components/FormattedDateTime";
+import { fetchWithAuth } from "@/lib/api";
 import { useDebounce } from "use-debounce";
 
 const Search = () => {
@@ -34,13 +34,17 @@ const Search = () => {
       }
 
       try {
-        const files = await getFiles(); // ✅ FIXED (no params)
+        const data = await fetchWithAuth("/files");
 
-        // 🔍 Filter on frontend
-        const filtered = files.documents.filter((file: any) =>
-          file.filename.toLowerCase().includes(debouncedQuery.toLowerCase())
+        const normalized = data.map((file: any) => ({
+          ...file,
+          name: file.filename,
+          extension: file.filename?.split(".").pop(),
+        }));
+
+        const filtered = normalized.filter((file: any) =>
+          file.name.toLowerCase().includes(debouncedQuery.toLowerCase())
         );
-
         setResults(filtered);
         setOpen(true);
       } catch (err) {

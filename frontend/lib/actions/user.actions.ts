@@ -1,4 +1,4 @@
-"use server";
+/* "use server";
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -85,11 +85,14 @@ export const createAccount = async (params: {
   return data;
 };
 
-// =======================
 // SIGN OUT
-// =======================
-export const signOutUser = async () => {
+
+export async function signOutUser() {
   const cookieStore = await cookies();
-cookieStore.delete("token");
-  redirect("/sign-in");
-};
+
+  cookieStore.set("token", "", {
+    path: "/",
+    maxAge: 0,
+  });
+}
+  */

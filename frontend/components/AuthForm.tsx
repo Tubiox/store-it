@@ -40,51 +40,58 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    setErrorMessage("");
+const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  setIsLoading(true);
+  setErrorMessage("");
 
-    try {
-      const url =
-        type === "sign-up"
-          ? "http://localhost:8000/auth/signup"
-          : "http://localhost:8000/auth/login";
+  try {
+    const url =
+      type === "sign-up"
+        ? "http://localhost:8000/auth/signup"
+        : "http://localhost:8000/auth/login";
 
-      const body =
-        type === "sign-up"
-          ? { email: values.email, password: values.password }
-          : { email: values.email, password: values.password };
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: values.email,
+        password: values.password,
+      }),
+    });
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
+    const data = await res.json();
 
-      const data = await res.json();
+    console.log("LOGIN RESPONSE:", data);
 
-      if (!res.ok) {
-        throw new Error(data.detail || "Something went wrong");
-      }
-
-      if (type === "sign-in") {
-        // Store token in a cookie accessible to the Next.js server
-        document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60}; SameSite=Lax`;
-        router.push("/");
-        router.refresh();
-      } else {
-        router.push("/sign-in");
-      }
-
-    } catch (err: any) {
-      setErrorMessage(err.message || "Error occurred");
-    } finally {
-      setIsLoading(false);
+    if (!res.ok) {
+      throw new Error(data.detail || "Something went wrong");
     }
-  };
 
+    // ✅ LOGIN FLOW
+    if (type === "sign-in") {
+      const token = data.access_token;
+
+      if (!token) {
+        alert("No token received");
+        return;
+      }
+    localStorage.setItem("token", token);
+    router.push("/");
+    
+    } else {
+      // signup → go to login
+      window.location.href = "/sign-in";
+    }
+
+  } catch (err: any) {
+    console.error("AUTH ERROR:", err);
+    setErrorMessage(err.message || "Error occurred");
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="auth-form">

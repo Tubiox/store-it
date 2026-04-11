@@ -79,17 +79,30 @@ declare interface User {
 
 declare interface CustomFile {
   _id: string;
-  name: string;
-  url: string;
-  type: string;
-  extension: string;
-  size: number;
-  $createdAt: string;
-  $updatedAt: string;
-  owner: User;
-  users: string[]; 
-  accountId: string;
-  bucketFileId: string;
+
+  // backend fields
+  filename: string;
+  storage_key: string;
+  content_type: string;
+  uploaded_at: string;
+  owner_id: string;
+  file_size?: number;
+
+  // derived fields (for UI compatibility)
+  name?: string;
+  extension?: string;
+  size?: number;
+  url?: string;
+
+  // optional UI fields (to avoid crashes)
+  owner?: {
+    fullName: string;
+  };
+
+  users?: string[];
+
+  $createdAt?: string;
+  $updatedAt?: string;
 }
 
 declare interface ShareInputProps {

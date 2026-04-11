@@ -1,12 +1,10 @@
-"use server";
+/* "use server";
 
 import { cookies } from "next/headers";
 
 const BACKEND_URL = "http://127.0.0.1:8000";
 
-// =======================
 // UPLOAD FILE
-// =======================
 export const uploadFile = async (params: { file: File }) => {
 const cookieStore = await cookies();
 const token = cookieStore.get("token")?.value;
@@ -34,24 +32,32 @@ const token = cookieStore.get("token")?.value;
   return data;
 };
 
-// =======================
 // GET FILES
-// =======================
 export const getFiles = async () => {
-const cookieStore = await cookies();
-const token = cookieStore.get("token")?.value;
-  if (!token) return { documents: [], total: 0 };
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
 
-  const res = await fetch(`${BACKEND_URL}/files`, {
+  if (!token) {
+    console.log("NO TOKEN FOUND");
+    return { documents: [], total: 0 };
+  }
+
+  const res = await fetch("http://localhost:8000/files", {
+    method: "GET",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`, // 🔥 IMPORTANT
     },
     cache: "no-store",
   });
 
-  if (!res.ok) return { documents: [], total: 0 };
-
   const data = await res.json();
+
+  console.log("FILES API RESPONSE:", data);
+
+  if (!res.ok) {
+    console.log("FILES ERROR:", data);
+    return { documents: [], total: 0 };
+  }
 
   return {
     documents: data,
@@ -59,9 +65,7 @@ const token = cookieStore.get("token")?.value;
   };
 };
 
-// =======================
 // DELETE FILE (optional later)
-// =======================
 export const deleteFile = async (fileId: string) => {
 
 const cookieStore = await cookies();
@@ -83,3 +87,4 @@ const token = cookieStore.get("token")?.value;
 
   return { status: "success" };
 };
+*/

@@ -8,13 +8,8 @@ import Image from "next/image";
 import Thumbnail from "@/components/Thumbnail";
 import { MAX_FILE_SIZE } from "@/constants";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
-const getToken = () => {
-  return document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("token="))
-    ?.split("=")[1];
-};
 
 interface Props {
   className?: string;
@@ -22,21 +17,21 @@ interface Props {
 
 const FileUploader = ({ className }: Props) => {
   const { toast } = useToast();
+  const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
 
-    const token = getToken();
+const token = localStorage.getItem("token");
 
-    if (!token) {
-      toast({
-        description: "You are not logged in",
-        className: "error-toast",
-      });
-      return;
-    }
-
+if (!token) {
+  toast({
+    description: "You are not logged in",
+    className: "error-toast",
+  });
+  return;
+}
     for (const file of acceptedFiles) {
       // size check
       if (file.size > MAX_FILE_SIZE) {
@@ -68,6 +63,7 @@ const FileUploader = ({ className }: Props) => {
         toast({
           description: `${file.name} uploaded successfully`,
         });
+        router.refresh();
 
         // remove from UI
         setFiles((prev) => prev.filter((f) => f.name !== file.name));
@@ -94,7 +90,7 @@ const FileUploader = ({ className }: Props) => {
         <p>Upload</p>
       </Button>
 
-      {files.length > 0 && (
+      {files && files.length > 0 && (
         <ul className="uploader-preview-list">
           <h4 className="h4 text-light-100">Uploading</h4>
 

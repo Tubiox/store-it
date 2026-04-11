@@ -7,15 +7,14 @@ from fastapi.openapi.utils import get_openapi
 
 app = FastAPI()
 
-# CORS 
+#CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # for dev only
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # Routers
 app.include_router(auth_router)
 app.include_router(files_router)

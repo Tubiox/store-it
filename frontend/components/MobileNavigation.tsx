@@ -9,31 +9,20 @@ import {
 import Image from "next/image";
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Separator } from "@radix-ui/react-separator";
 import { navItems } from "@/constants";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import FileUploader from "@/components/FileUploader";
-import { signOutUser } from "@/lib/actions/user.actions";
 
-interface Props {
-  $id: string;
-  accountId: string;
-  fullName: string;
-  avatar: string;
-  email: string;
-}
-
-const MobileNavigation = ({
-  $id: ownerId,
-  accountId,
-  fullName,
-  avatar,
-  email,
-}: Props) => {
+const MobileNavigation = () => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+
+  const handleLogout = () => {
+    document.cookie = "token=; path=/; max-age=0";
+    window.location.href = "/sign-in";
+  };
 
   return (
     <header className="mobile-header">
@@ -49,49 +38,40 @@ const MobileNavigation = ({
         <SheetTrigger>
           <Image
             src="/assets/icons/menu.svg"
-            alt="Search"
+            alt="menu"
             width={30}
             height={30}
           />
         </SheetTrigger>
+
         <SheetContent className="shad-sheet h-screen px-3">
           <SheetTitle>
             <div className="header-user">
               <Image
-                src={avatar}
+                src="/assets/images/avatar.png"
                 alt="avatar"
                 width={44}
                 height={44}
                 className="header-user-avatar"
               />
-              <div className="sm:hidden lg:block">
-                <p className="subtitle-2 capitalize">{fullName}</p>
-                <p className="caption">{email}</p>
+              <div>
+                <p className="subtitle-2 capitalize">User</p>
+                <p className="caption">user@email.com</p>
               </div>
             </div>
-            <Separator className="mb-4 bg-light-200/20" />
           </SheetTitle>
 
           <nav className="mobile-nav">
             <ul className="mobile-nav-list">
               {navItems.map(({ url, name, icon }) => (
-                <Link key={name} href={url} className="lg:w-full">
+                <Link key={name} href={url}>
                   <li
                     className={cn(
                       "mobile-nav-item",
                       pathname === url && "shad-active",
                     )}
                   >
-                    <Image
-                      src={icon}
-                      alt={name}
-                      width={24}
-                      height={24}
-                      className={cn(
-                        "nav-icon",
-                        pathname === url && "nav-icon-active",
-                      )}
-                    />
+                    <Image src={icon} alt={name} width={24} height={24} />
                     <p>{name}</p>
                   </li>
                 </Link>
@@ -99,18 +79,13 @@ const MobileNavigation = ({
             </ul>
           </nav>
 
-          <Separator className="my-5 bg-light-200/20" />
-
-          <div className="flex flex-col justify-between gap-5 pb-5">
+          <div className="flex flex-col gap-5 pb-5 mt-5">
             <FileUploader />
-            <Button
-              type="submit"
-              className="mobile-sign-out-button"
-              onClick={async () => await signOutUser()}
-            >
+
+            <Button onClick={handleLogout} className="mobile-sign-out-button">
               <Image
                 src="/assets/icons/logout.svg"
-                alt="logo"
+                alt="logout"
                 width={24}
                 height={24}
               />

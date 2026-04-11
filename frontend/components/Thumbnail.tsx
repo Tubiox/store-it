@@ -17,7 +17,7 @@ export const Thumbnail = ({
   imageClassName,
   className,
 }: Props) => {
-  const isImage = type === "image" && extension !== "svg";
+  const isImage = type?.includes("image") && extension !== "svg";
 
   return (
     <figure className={cn("thumbnail", className)}>

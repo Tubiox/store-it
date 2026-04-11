@@ -6,13 +6,7 @@ import { navItems } from "@/constants";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-interface Props {
-  fullName: string;
-  avatar: string;
-  email: string;
-}
-
-const Sidebar = ({ fullName, avatar, email }: Props) => {
+const Sidebar = () => {
   const pathname = usePathname();
 
   return (
@@ -64,26 +58,28 @@ const Sidebar = ({ fullName, avatar, email }: Props) => {
 
       <Image
         src="/assets/images/files-2.png"
-        alt="logo"
+        alt="illustration"
         width={506}
         height={418}
         className="w-full"
       />
 
+      {/* TEMP STATIC USER */}
       <div className="sidebar-user-info">
         <Image
-          src={avatar}
+          src="/assets/images/avatar.png"
           alt="Avatar"
           width={44}
           height={44}
           className="sidebar-user-avatar"
         />
         <div className="hidden lg:block">
-          <p className="subtitle-2 capitalize">{fullName}</p>
-          <p className="caption">{email}</p>
+          <p className="subtitle-2 capitalize">User</p>
+          <p className="caption">user@email.com</p>
         </div>
       </div>
     </aside>
   );
 };
+
 export default Sidebar;
