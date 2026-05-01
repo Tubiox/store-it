@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Thumbnail } from "@/components/Thumbnail";
 import { FormattedDateTime } from "@/components/FormattedDateTime";
 import { fetchWithAuth } from "@/lib/api";
+import { getCsrfToken } from "@/lib/auth";
 
 const Dashboard = () => {
   const [files, setFiles] = useState<any[]>([]);
@@ -11,11 +12,12 @@ const Dashboard = () => {
 
   const handleDownload = async (fileId: string) => {
     try {
-      const token = localStorage.getItem("token");
+      const csrfToken = getCsrfToken();
 
-      const res = await fetch(`http://127.0.0.1:8000/download/${fileId}`, {
+      const res = await fetch(`/api/download/${fileId}`, {
+        credentials: "include",
         headers: {
-          Authorization: `Bearer ${token}`,
+          "X-CSRF-Token": csrfToken || "",
         },
       });
 
@@ -38,11 +40,11 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const csrfToken = getCsrfToken();
 
-    console.log("TOKEN IN DASHBOARD:", token);
+    console.log("CSRF TOKEN IN DASHBOARD:", csrfToken);
 
-    if (!token || token === "undefined" || token === "null") {
+    if (!csrfToken) {
       window.location.href = "/sign-in";
       return;
     }

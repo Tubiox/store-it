@@ -4,6 +4,7 @@ import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { cn, convertFileToUrl, getFileType } from "@/lib/utils";
+import { getCsrfToken } from "@/lib/auth";
 import Image from "next/image";
 import Thumbnail from "@/components/Thumbnail";
 import { MAX_FILE_SIZE } from "@/constants";
@@ -23,15 +24,15 @@ const FileUploader = ({ className }: Props) => {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
 
-const token = localStorage.getItem("token");
+    const csrfToken = getCsrfToken();
 
-if (!token) {
-  toast({
-    description: "You are not logged in",
-    className: "error-toast",
-  });
-  return;
-}
+    if (!csrfToken) {
+      toast({
+        description: "You are not logged in",
+        className: "error-toast",
+      });
+      return;
+    }
     for (const file of acceptedFiles) {
       // size check
       if (file.size > MAX_FILE_SIZE) {
@@ -46,10 +47,11 @@ if (!token) {
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("http://127.0.0.1:8000/upload", {
+        const res = await fetch("/api/upload", {
           method: "POST",
+          credentials: "include",
           headers: {
-            Authorization: `Bearer ${token}`,
+            "X-CSRF-Token": csrfToken,
           },
           body: formData,
         });

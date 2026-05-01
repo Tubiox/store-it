@@ -1,18 +1,21 @@
-const BASE_URL = "http://127.0.0.1:8000";
+import { getCsrfToken } from "./auth";
+
+const BASE_URL = "/api";
 
 export const fetchWithAuth = async (
     endpoint: string,
     options: RequestInit = {}
 ) => {
-    const token = localStorage.getItem("token");
+    const csrfToken = getCsrfToken();
 
-    console.log("SENDING TOKEN:", token);
+    console.log("SENDING CSRF TOKEN:", csrfToken);
 
-    const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
         ...options,
+        credentials: "include",
         headers: {
             ...(options.headers || {}),
-            Authorization: token ? `Bearer ${token}` : "",
+            "X-CSRF-Token": csrfToken || "",
         },
     });
 
@@ -21,7 +24,7 @@ export const fetchWithAuth = async (
     console.log("API RESPONSE:", data);
 
     if (!res.ok) {
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
             window.location.href = "/sign-in";
         }
         throw new Error(data.detail || "Something went wrong");

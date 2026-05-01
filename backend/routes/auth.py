@@ -1,4 +1,5 @@
-from fastapi import Depends, APIRouter, HTTPException, Header
+from fastapi import Depends, APIRouter, HTTPException, Header, Response, Request
+import secrets
 from pydantic import BaseModel
 from database import users_collection
 from auth_utils import hash_password, verify_password, create_access_token, decode_token
@@ -13,11 +14,18 @@ class User(BaseModel):
 
 
 # AUTH DEPENDENCY (IMPORTANT)
-def get_current_user(authorization: str = Header(None)):
-    if not authorization or not authorization.startswith("Bearer "):
+def get_current_user(request: Request):
+    token = request.cookies.get("access_token")
+
+    if not token:
+        # Fallback for dev/mobile testing if needed
+        authorization = request.headers.get("Authorization")
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization.split(" ")[1]
+
+    if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    token = authorization.split(" ")[1]
     payload = decode_token(token)
 
     if not payload:
@@ -26,6 +34,13 @@ def get_current_user(authorization: str = Header(None)):
     email = payload.get("sub")
     if not email:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+    # CSRF Check
+    csrf_token_header = request.headers.get("X-CSRF-Token")
+    csrf_token_payload = payload.get("csrf")
+
+    if not csrf_token_header or csrf_token_header != csrf_token_payload:
+        raise HTTPException(status_code=403, detail="CSRF token missing or invalid")
 
     user = users_collection.find_one({"email": email})
     if not user:
@@ -54,7 +69,7 @@ def signup(user: User):
 
 # LOGIN
 @router.post("/login")
-def login(user: User):
+def login(user: User, response: Response):
     existing = users_collection.find_one({"email": user.email})
 
     if not existing:
@@ -63,12 +78,36 @@ def login(user: User):
     if not verify_password(user.password, existing["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token({"sub": user.email})
+    csrf_token = secrets.token_urlsafe(32)
+    token = create_access_token({"sub": user.email, "csrf": csrf_token})
+
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=False, # Set to True in production with HTTPS
+    )
+
+    response.set_cookie(
+        key="csrf_token",
+        value=csrf_token,
+        httponly=False,
+        samesite="lax",
+        secure=False,
+    )
 
     return {
         "message": "Login successful",
-        "access_token": token
     }
+
+
+# LOGOUT
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie("access_token")
+    response.delete_cookie("csrf_token")
+    return {"message": "Logged out successfully"}
 
 
 # GET CURRENT USER

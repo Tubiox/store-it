@@ -14,7 +14,8 @@ const Page = () => {
       try {
         const data = await fetchWithAuth("/files");
 
-        const normalized = data.map((file: any) => ({
+        const documents = data?.documents || [];
+        const normalized = documents.map((file: any) => ({
           ...file,
           name: file.filename,
           extension: file.filename?.split(".").pop(),

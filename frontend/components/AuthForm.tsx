@@ -46,11 +46,12 @@ const AuthForm = ({ type }: { type: FormType }) => {
     try {
       const url =
         type === "sign-up"
-          ? "http://127.0.0.1:8000/auth/signup"
-          : "http://127.0.0.1:8000/auth/login";
+          ? "/api/auth/signup"
+          : "/api/auth/login";
 
       const res = await fetch(url, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -70,19 +71,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
       // SIGN IN FLOW
       if (type === "sign-in") {
-        const token = data.access_token;
-
-        if (!token) {
-          throw new Error("No token received");
-        }
-
-        localStorage.setItem("token", token);
-
-        console.log("TOKEN SAVED:", token);
-
-
         window.location.href = "/";
-
         return;
       }
 

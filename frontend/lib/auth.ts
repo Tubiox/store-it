@@ -1,7 +1,5 @@
-export const setToken = (token: string) => {
-  localStorage.setItem("token", token);
-};
-
-export const getToken = () => {
-  return localStorage.getItem("token");
+export const getCsrfToken = () => {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )csrf_token=([^;]+)"));
+  return match ? match[2] : null;
 };
