@@ -22,9 +22,7 @@ const Search = () => {
 
   const [debouncedQuery] = useDebounce(query, 300);
 
-  // =======================
   // FETCH FILES
-  // =======================
   useEffect(() => {
     const fetchFiles = async () => {
       if (debouncedQuery.length === 0) {
@@ -36,7 +34,7 @@ const Search = () => {
       try {
         const data = await fetchWithAuth("/files");
 
-        const normalized = data.map((file: any) => ({
+        const normalized = (data.documents || []).map((file: any) => ({
           ...file,
           name: file.filename,
           extension: file.filename?.split(".").pop(),
@@ -67,6 +65,7 @@ const Search = () => {
   // =======================
   // CLICK ITEM
   // =======================
+
   const handleClickItem = (file: any) => {
     setOpen(false);
     setResults([]);
@@ -107,9 +106,8 @@ const Search = () => {
                   <div className="flex cursor-pointer items-center gap-4">
                     <Thumbnail
                       type={file.content_type}
-                      extension={file.filename?.split(".").pop()}
-                      url="" // optional
-                      className="size-9 min-w-9"
+                      extension={file.filename?.split(".").pop() || ""}
+                      url=""
                     />
 
                     <p className="subtitle-2 line-clamp-1 text-light-100">

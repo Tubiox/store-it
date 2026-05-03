@@ -20,7 +20,7 @@ const Page = () => {
           name: file.filename,
           extension: file.filename?.split(".").pop(),
           size: file.file_size,
-          url: "",
+          url: undefined,
           $createdAt: file.uploaded_at,
           $updatedAt: file.uploaded_at,
           owner: { fullName: "You" },

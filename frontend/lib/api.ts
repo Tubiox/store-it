@@ -1,34 +1,50 @@
 import { getCsrfToken } from "./auth";
 
+// ❌ REMOVE localhost:8000
+// ✅ USE proxy
 const BASE_URL = "/api";
 
 export const fetchWithAuth = async (
-    endpoint: string,
-    options: RequestInit = {}
+  endpoint: string,
+  options: RequestInit = {}
 ) => {
-    const csrfToken = getCsrfToken();
+  const csrfToken = getCsrfToken();
 
-    console.log("SENDING CSRF TOKEN:", csrfToken);
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  };
 
-    const res = await fetch(`${BASE_URL}${endpoint}`, {
-        ...options,
-        credentials: "include",
-        headers: {
-            ...(options.headers || {}),
-            "X-CSRF-Token": csrfToken || "",
-        },
-    });
+  // CSRF (if exists)
+  if (csrfToken) {
+    headers["X-CSRF-Token"] = csrfToken;
+  }
 
-    const data = await res.json();
+  // JSON header (only if not FormData)
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
-    console.log("API RESPONSE:", data);
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    credentials: "include", // 🔥 critical
+    headers,
+  });
 
-    if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-            window.location.href = "/sign-in";
-        }
-        throw new Error(data.detail || "Something went wrong");
+  let data;
+
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error("Invalid server response");
+  }
+
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      window.location.href = "/sign-in";
     }
 
-    return data;
+    throw new Error(data?.detail || "Request failed");
+  }
+
+  return data;
 };

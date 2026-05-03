@@ -11,7 +11,6 @@ import { MAX_FILE_SIZE } from "@/constants";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
-
 interface Props {
   className?: string;
 }
@@ -33,8 +32,8 @@ const FileUploader = ({ className }: Props) => {
       });
       return;
     }
+
     for (const file of acceptedFiles) {
-      // size check
       if (file.size > MAX_FILE_SIZE) {
         toast({
           description: `${file.name} is too large`,
@@ -60,16 +59,13 @@ const FileUploader = ({ className }: Props) => {
 
         if (!res.ok) throw new Error(data.detail);
 
-        console.log("Uploaded:", data);
-
         toast({
           description: `${file.name} uploaded successfully`,
         });
+
         router.refresh();
 
-        // remove from UI
         setFiles((prev) => prev.filter((f) => f.name !== file.name));
-
       } catch (err: any) {
         console.error(err);
 
@@ -79,7 +75,7 @@ const FileUploader = ({ className }: Props) => {
         });
       }
     }
-  }, [toast]);
+  }, [toast, router]);
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
@@ -92,7 +88,7 @@ const FileUploader = ({ className }: Props) => {
         <p>Upload</p>
       </Button>
 
-      {files && files.length > 0 && (
+      {files.length > 0 && (
         <ul className="uploader-preview-list">
           <h4 className="h4 text-light-100">Uploading</h4>
 
@@ -107,7 +103,6 @@ const FileUploader = ({ className }: Props) => {
                     extension={extension}
                     url={convertFileToUrl(file)}
                   />
-
                   <p>{file.name}</p>
                 </div>
               </li>

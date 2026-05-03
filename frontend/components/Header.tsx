@@ -7,8 +7,16 @@ import Search from "@/components/Search";
 import FileUploader from "@/components/FileUploader";
 
 const Header = () => {
-  const handleLogout = () => {
-    document.cookie = "token=; path=/; max-age=0";
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+
     window.location.href = "/sign-in";
   };
 

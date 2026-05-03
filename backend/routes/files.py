@@ -111,3 +111,12 @@ def get_files(current_user=Depends(get_current_user)):
     except Exception as e:
         print("FETCH FILES ERROR:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+    path="/"
+    )
+    return {"message": "Logged out"}

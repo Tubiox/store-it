@@ -11,7 +11,7 @@ const ImageThumbnail = ({ file }: { file: any }) => (
     <Thumbnail
       type="file"
       extension={file.filename?.split(".").pop()}
-      url=""
+      url={undefined}
     />
     <div className="flex flex-col">
       <p className="subtitle-2 mb-1">{file.filename}</p>

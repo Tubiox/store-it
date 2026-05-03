@@ -146,7 +146,7 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
             >
               {actionItem.value === "download" ? (
                 <a
-                  href={`http://127.0.0.1:8000/download/${file._id}`}
+                  href={`http://localhost:8000/download/${file._id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2"

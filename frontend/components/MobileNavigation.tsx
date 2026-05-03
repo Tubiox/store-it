@@ -19,10 +19,18 @@ const MobileNavigation = () => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  const handleLogout = () => {
-    document.cookie = "token=; path=/; max-age=0";
-    window.location.href = "/sign-in";
-  };
+const handleLogout = async () => {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (err) {
+    console.error("Logout failed", err);
+  }
+
+  window.location.href = "/sign-in";
+};
 
   return (
     <header className="mobile-header">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -27,6 +28,7 @@ const formSchema = z.object({
 });
 
 const AuthForm = ({ type }: { type: FormType }) => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -40,51 +42,49 @@ const AuthForm = ({ type }: { type: FormType }) => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    setErrorMessage("");
+  if (isLoading) return; // 🛑 STOP duplicate calls
 
-    try {
-      const url =
-        type === "sign-up"
-          ? "/api/auth/signup"
-          : "/api/auth/login";
+  setIsLoading(true);
+  setErrorMessage("");
 
-      const res = await fetch(url, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
-      });
+  try {
+    const BASE_URL = "/api";
 
-      const data = await res.json();
+    const url =
+      type === "sign-up"
+        ? `${BASE_URL}/auth/signup`
+        : `${BASE_URL}/auth/login`;
 
-      console.log("AUTH RESPONSE:", data);
+    const res = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: values.email,
+        password: values.password,
+      }),
+    });
 
-      if (!res.ok) {
-        throw new Error(data.detail || "Something went wrong");
-      }
+    const data = await res.json();
 
-      // SIGN IN FLOW
-      if (type === "sign-in") {
-        window.location.href = "/";
-        return;
-      }
-
-      //SIGN UP FLOW → go to login
-      window.location.href = "/sign-in";
-
-    } catch (err: any) {
-      console.error("AUTH ERROR:", err);
-      setErrorMessage(err.message || "Error occurred");
-    } finally {
-      setIsLoading(false);
+    if (!res.ok) {
+      throw new Error(data.detail || "Something went wrong");
     }
-  };
+
+    if (type === "sign-in") {
+      window.location.replace("/");
+    } else {
+      window.location.replace("/sign-in");
+    }
+
+  } catch (err: any) {
+    setErrorMessage(err.message || "Error occurred");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <Form {...form}>

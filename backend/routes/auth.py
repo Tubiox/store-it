@@ -3,6 +3,7 @@ import secrets
 from pydantic import BaseModel
 from database import users_collection
 from auth_utils import hash_password, verify_password, create_access_token, decode_token
+from auth_utils import ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter(prefix="/auth")
 
@@ -13,12 +14,12 @@ class User(BaseModel):
     password: str
 
 
-# AUTH DEPENDENCY (IMPORTANT)
+from fastapi import Request, HTTPException
+
 def get_current_user(request: Request):
     token = request.cookies.get("access_token")
 
     if not token:
-        # Fallback for dev/mobile testing if needed
         authorization = request.headers.get("Authorization")
         if authorization and authorization.startswith("Bearer "):
             token = authorization.split(" ")[1]
@@ -35,19 +36,19 @@ def get_current_user(request: Request):
     if not email:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    # CSRF Check
-    csrf_token_header = request.headers.get("X-CSRF-Token")
-    csrf_token_payload = payload.get("csrf")
+    # 🔥 ONLY apply CSRF for unsafe methods
+    if request.method in ["POST", "PUT", "DELETE"]:
+        csrf_token_header = request.headers.get("X-CSRF-Token")
+        csrf_token_payload = payload.get("csrf")
 
-    if not csrf_token_header or csrf_token_header != csrf_token_payload:
-        raise HTTPException(status_code=403, detail="CSRF token missing or invalid")
+        if not csrf_token_header or csrf_token_header != csrf_token_payload:
+            raise HTTPException(status_code=403, detail="CSRF token missing or invalid")
 
     user = users_collection.find_one({"email": email})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     return user
-
 
 # SIGNUP
 @router.post("/signup")
@@ -82,12 +83,14 @@ def login(user: User, response: Response):
     token = create_access_token({"sub": user.email, "csrf": csrf_token})
 
     response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        samesite="lax",
-        secure=False, # Set to True in production with HTTPS
-    )
+    key="access_token",
+    value=token,
+    httponly=True,
+    samesite="lax",
+    secure=False,
+    max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    path="/"
+)
 
     response.set_cookie(
         key="csrf_token",

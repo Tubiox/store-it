@@ -3,32 +3,50 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
 
-/*export function middleware(request: NextRequest) {
-  const token = request.cookies.get("token")?.value;
-  const { pathname } = request.nextUrl;
+export async function middleware(request: NextRequest) {
+  const { pathname, origin } = request.nextUrl;
 
-  const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  const isPublic = PUBLIC_PATHS.some((p) =>
+    pathname.startsWith(p)
+  );
 
-  // No token and trying to access a protected route → send to sign-in
-  if (!token && !isPublicPath) {
+  // 🔥 Step 1: Check if cookie even exists
+  const hasCookie = request.cookies.get("access_token");
+
+  // 🚫 No cookie → not authenticated
+  if (!hasCookie) {
+    if (isPublic) return NextResponse.next();
+
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  // Has token but visiting auth pages → send to dashboard
-  if (token && isPublicPath) {
-    return NextResponse.redirect(new URL("/", request.url));
+  try {
+    // 🔥 Step 2: Validate with backend
+    const res = await fetch(`${origin}/api/auth/me`, {
+      method: "GET",
+      headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+    });
+
+    if (!res.ok) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+
+    // 🔁 If logged in and visiting auth pages → redirect
+    if (isPublic) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    return NextResponse.next();
+
+  } catch {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
-
-  return NextResponse.next();
-}
-*/
-
-export function middleware() {
-  return NextResponse.next();
 }
 
 export const config = {
-  // Run on all routes except Next.js internals and static files
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|assets|icons|images).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|assets|icons|images).*)",
+  ],
 };
-
