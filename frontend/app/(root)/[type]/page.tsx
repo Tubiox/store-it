@@ -13,17 +13,24 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchFiles = async () => {
-  try {
-    const data = await fetchWithAuth("/files");
-    setFiles(data?.documents || []);
-  } catch (err) {
-    console.error("Error fetching files:", err);
-    setFiles([]);
-  }
-};
-useEffect(() => {
-  fetchFiles();
-}, []);
+    try {
+      setLoading(true);
+
+      const endpoint = type ? `/files?type=${type}` : "/files";
+
+      const data = await fetchWithAuth(endpoint);
+
+      setFiles(data?.documents || []);
+    } catch (err) {
+      console.error("Error fetching files:", err);
+      setFiles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchFiles();
+  }, [type]);
 
   //  FILTER LOGIC
   const filteredFiles = files.filter((file) => {
@@ -82,11 +89,7 @@ useEffect(() => {
       ) : filteredFiles.length > 0 ? (
         <section className="file-list">
           {filteredFiles.map((file: any) => (
-            <Card
-              key={file._id}
-              file={file}
-              onDeleteSuccess={fetchFiles}
-            />))}
+           <Card key={file._id} file={file} onDeleteSuccess={fetchFiles} />))}
         </section>
       ) : (
         <p className="empty-list">No files found</p>

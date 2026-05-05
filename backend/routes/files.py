@@ -87,10 +87,7 @@ async def download(
 
         return Response(
             content=decrypted_data,
-            media_type="application/octet-stream",
-            headers={
-                "Content-Disposition": f"attachment; filename={file['filename']}"
-            }
+            media_type=file["content_type"],
         )
 
     except Exception as e:
@@ -208,9 +205,6 @@ def access_shared_file(token: str):
     decrypted_data = decrypt(encrypted_data)
 
     return Response(
-        content=decrypted_data,
-        media_type="application/octet-stream",
-        headers={
-            "Content-Disposition": f"attachment; filename={file['filename']}"
-        }
-    )
+            content=decrypted_data,
+            media_type=file["content_type"],
+        )
