@@ -4,48 +4,68 @@ import React, { useEffect, useState } from "react";
 import Sort from "@/components/Sort";
 import Card from "@/components/Card";
 import { fetchWithAuth } from "@/lib/api";
+import { useParams } from "next/navigation";
 
 const Page = () => {
+  const { type } = useParams();
+
   const [files, setFiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadFiles = async () => {
-      try {
-        const data = await fetchWithAuth("/files");
+  const fetchFiles = async () => {
+  try {
+    const data = await fetchWithAuth("/files");
+    setFiles(data?.documents || []);
+  } catch (err) {
+    console.error("Error fetching files:", err);
+    setFiles([]);
+  }
+};
+useEffect(() => {
+  fetchFiles();
+}, []);
 
-        const documents = data?.documents || [];
-        const normalized = documents.map((file: any) => ({
-          ...file,
-          name: file.filename,
-          extension: file.filename?.split(".").pop(),
-          size: file.file_size,
-          url: undefined,
-          $createdAt: file.uploaded_at,
-          $updatedAt: file.uploaded_at,
-          owner: { fullName: "You" },
-          users: [],
-        }));
+  //  FILTER LOGIC
+  const filteredFiles = files.filter((file) => {
+    if (type === "images") {
+      return file.content_type?.startsWith("image");
+    }
 
-        setFiles(normalized);
-      } catch (err) {
-        console.error("Error fetching files:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (type === "documents") {
+      return (
+        file.content_type?.includes("pdf") ||
+        file.content_type?.includes("word") ||
+        file.content_type?.includes("text")
+      );
+    }
 
-    loadFiles();
-  }, []);
+    if (type === "media") {
+      return (
+        file.content_type?.startsWith("video") ||
+        file.content_type?.startsWith("audio")
+      );
+    }
+
+    if (type === "others") {
+      return !(
+        file.content_type?.startsWith("image") ||
+        file.content_type?.startsWith("video") ||
+        file.content_type?.startsWith("audio") ||
+        file.content_type?.includes("pdf")
+      );
+    }
+
+    return true;
+  });
 
   return (
     <div className="page-container">
       <section className="w-full">
-        <h1 className="h1 capitalize">Your Files</h1>
+        <h1 className="h1 capitalize">{type} Files</h1>
 
         <div className="total-size-section">
           <p className="body-1">
-            Total: <span className="h5">{files.length}</span>
+            Total: <span className="h5">{filteredFiles.length}</span>
           </p>
 
           <div className="sort-container">
@@ -59,14 +79,17 @@ const Page = () => {
 
       {loading ? (
         <p className="empty-list">Loading...</p>
-      ) : files && files.length > 0 ? (
+      ) : filteredFiles.length > 0 ? (
         <section className="file-list">
-          {files.map((file: any) => (
-            <Card key={file._id} file={file} />
-          ))}
+          {filteredFiles.map((file: any) => (
+            <Card
+              key={file._id}
+              file={file}
+              onDeleteSuccess={fetchFiles}
+            />))}
         </section>
       ) : (
-        <p className="empty-list">No files uploaded</p>
+        <p className="empty-list">No files found</p>
       )}
     </div>
   );

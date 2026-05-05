@@ -13,9 +13,10 @@ import { useRouter } from "next/navigation";
 
 interface Props {
   className?: string;
+  onUploadSuccess?: () => void;
 }
 
-const FileUploader = ({ className }: Props) => {
+const FileUploader = ({ className, onUploadSuccess }: Props) => {
   const { toast } = useToast();
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
@@ -30,6 +31,7 @@ const FileUploader = ({ className }: Props) => {
         description: "You are not logged in",
         className: "error-toast",
       });
+      onUploadSuccess?.();
       return;
     }
 
@@ -46,7 +48,7 @@ const FileUploader = ({ className }: Props) => {
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("/api/upload", {
+        const res = await fetch("http://localhost:8000/files/upload", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -63,6 +65,7 @@ const FileUploader = ({ className }: Props) => {
           description: `${file.name} uploaded successfully`,
         });
 
+        onUploadSuccess?.();
         router.refresh();
 
         setFiles((prev) => prev.filter((f) => f.name !== file.name));
@@ -75,7 +78,7 @@ const FileUploader = ({ className }: Props) => {
         });
       }
     }
-  }, [toast, router]);
+  }, [toast, router, onUploadSuccess]);
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 

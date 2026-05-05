@@ -53,18 +53,16 @@ const Search = () => {
     fetchFiles();
   }, [debouncedQuery]);
 
-  // =======================
+  
   // RESET INPUT
-  // =======================
   useEffect(() => {
     if (!searchQuery) {
       setQuery("");
     }
   }, [searchQuery]);
 
-  // =======================
+
   // CLICK ITEM
-  // =======================
 
   const handleClickItem = (file: any) => {
     setOpen(false);

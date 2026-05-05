@@ -16,6 +16,9 @@ class User(BaseModel):
 
 from fastapi import Request, HTTPException
 
+from database import users_collection
+from bson import ObjectId
+
 def get_current_user(request: Request):
     token = request.cookies.get("access_token")
 
@@ -36,7 +39,14 @@ def get_current_user(request: Request):
     if not email:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    # 🔥 ONLY apply CSRF for unsafe methods
+    user = users_collection.find_one({"email": email})
+
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user
+
+    # ONLY apply CSRF for unsafe methods
     if request.method in ["POST", "PUT", "DELETE"]:
         csrf_token_header = request.headers.get("X-CSRF-Token")
         csrf_token_payload = payload.get("csrf")

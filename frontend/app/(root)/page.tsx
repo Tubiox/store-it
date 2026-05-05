@@ -2,73 +2,32 @@
 
 import { useEffect, useState } from "react";
 import Card from "@/components/Card";
-import { usePathname } from "next/navigation";
 import { fetchWithAuth } from "@/lib/api";
-import { getCsrfToken } from "@/lib/auth";
+import FileUploader from "@/components/FileUploader";
 
 const Dashboard = () => {
-  const pathname = usePathname();
   const [files, setFiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // FETCH FILES
-  useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        const data = await fetchWithAuth("/files");
+ const fetchFiles = async () => {
+  try {
+    setLoading(true);
+    const data = await fetchWithAuth("/files");
+    setFiles(data?.documents || []);
+  } catch (err) {
+    console.error("Error fetching files:", err);
+    setFiles([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
-        if (!data?.documents) {
-          setFiles([]);
-        } else {
-          setFiles(data.documents);
-        }
-      } catch (err) {
-        console.error("Error fetching files:", err);
-        setFiles([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchFiles();
-  }, []);
-
-  const handleDownload = async (fileId: string) => {
-    try {
-      const csrfToken = getCsrfToken();
-
-      const res = await fetch(
-        `http://localhost:8000/download/${fileId}`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
-          },
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error(`Download failed: ${res.status}`);
-      }
-
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `file-${fileId}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Download error:", err);
-    }
-  };
+useEffect(() => {
+  fetchFiles();
+}, []);
 
   return (
-    <div className="dashboard-container">
+<div className="dashboard-container">
       <section className="dashboard-recent-files">
         <h2 className="h3 xl:h2 text-light-100">
           Recent files uploaded
@@ -78,40 +37,12 @@ const Dashboard = () => {
           <p className="empty-list">Loading...</p>
         ) : files.length > 0 ? (
           <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {files
-              .filter((file) => {
-                if (pathname.includes("images")) {
-                  return file.content_type?.startsWith("image");
-                }
-
-                if (pathname.includes("documents")) {
-                  return (
-                    file.content_type?.includes("pdf") ||
-                    file.content_type?.includes("word") ||
-                    file.content_type?.includes("text")
-                  );
-                }
-
-                if (pathname.includes("media")) {
-                  return (
-                    file.content_type?.startsWith("video") ||
-                    file.content_type?.startsWith("audio")
-                  );
-                }
-
-                if (pathname.includes("others")) {
-                  return !(
-                    file.content_type?.startsWith("image") ||
-                    file.content_type?.startsWith("video") ||
-                    file.content_type?.includes("pdf")
-                  );
-                }
-
-                return true;
-              })
-              .map((file) => (
-                <Card key={file._id} file={file} />
-              ))}
+            {files.map((file) => (
+              <Card
+                key={file._id}
+                file={file}
+                onDeleteSuccess={fetchFiles}
+              />))}
           </div>
         ) : (
           <p className="empty-list">No files uploaded</p>

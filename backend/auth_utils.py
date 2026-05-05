@@ -9,9 +9,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-# =========================
 # PASSWORD HANDLING
-# =========================
 def _prep_password(password: str) -> bytes:
     return hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
 
@@ -29,9 +27,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     )
 
 
-# =========================
 # JWT TOKEN
-# =========================
 def create_access_token(data: dict):
     to_encode = data.copy()
 

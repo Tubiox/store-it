@@ -1,8 +1,6 @@
 import { getCsrfToken } from "./auth";
 
-// ❌ REMOVE localhost:8000
-// ✅ USE proxy
-const BASE_URL = "/api";
+const BASE_URL = "http://localhost:8000";
 
 export const fetchWithAuth = async (
   endpoint: string,
@@ -19,14 +17,14 @@ export const fetchWithAuth = async (
     headers["X-CSRF-Token"] = csrfToken;
   }
 
-  // JSON header (only if not FormData)
+  // JSON header
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
 
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
-    credentials: "include", // 🔥 critical
+    credentials: "include", //critical
     headers,
   });
 

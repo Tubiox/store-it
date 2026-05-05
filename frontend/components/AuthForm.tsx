@@ -42,7 +42,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-  if (isLoading) return; // 🛑 STOP duplicate calls
+  if (isLoading) return; 
 
   setIsLoading(true);
   setErrorMessage("");

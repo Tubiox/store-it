@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.auth import router as auth_router
 from routes.files import router as files_router
-
 from fastapi.openapi.utils import get_openapi
 
 app = FastAPI()
@@ -18,8 +17,7 @@ app.add_middleware(
 )
 # Routers
 app.include_router(auth_router)
-app.include_router(files_router)
-
+app.include_router(files_router, prefix="/files")
 
 def custom_openapi():
     if app.openapi_schema:

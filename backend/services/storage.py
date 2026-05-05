@@ -10,7 +10,6 @@ s3 = boto3.client(
     region_name="us-east-1",
     config=Config(signature_version="s3v4"),
 )
-
 BUCKET = "storeit"
 
 def ensure_bucket():
@@ -19,7 +18,6 @@ def ensure_bucket():
     except:
         print("Creating bucket:", BUCKET)
         s3.create_bucket(Bucket=BUCKET)
-
 
 def upload_file(file_bytes, key):
     try:
@@ -45,15 +43,13 @@ def upload_file(file_bytes, key):
 def download_file(key):
     try:
         ensure_bucket()
-
         print("Fetching from MinIO:", key)
-
         response = s3.get_object(Bucket=BUCKET, Key=key)
-
         print("Download success")
-
         return response["Body"].read()
 
     except Exception as e:
         print("MINIO DOWNLOAD ERROR:", str(e))
         raise e
+def delete_from_storage(key):
+    s3.delete_object(Bucket=BUCKET, Key=key)

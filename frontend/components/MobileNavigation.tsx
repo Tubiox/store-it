@@ -21,7 +21,7 @@ const MobileNavigation = () => {
 
 const handleLogout = async () => {
   try {
-    await fetch("/api/auth/logout", {
+    await fetch("http://localhost:8000/auth/logout", {
       method: "POST",
       credentials: "include",
     });
