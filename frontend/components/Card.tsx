@@ -23,6 +23,7 @@ const Card = ({
   const [shareEmail, setShareEmail] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [loadingShare, setLoadingShare] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
 
@@ -112,15 +113,17 @@ const Card = ({
       if (!res.ok) throw new Error(data?.detail);
 
       navigator.clipboard.writeText(data.share_url);
+      setShareSuccess(true);
 
+      setTimeout(() => {
+        setIsShareModalOpen(false);
+        setShareEmail("");
+        setShareSuccess(false);
+      }, 1800);
 
-      alert(`Secure preview link sent to ${shareEmail}`);
-
-      setIsShareModalOpen(false);
-      setShareEmail("");
     } catch (err) {
       console.error(err);
-      alert("Could not send secure link");
+      console.error("Could not send secure link");
     } finally {
       setLoadingShare(false);
     }
@@ -222,24 +225,121 @@ const Card = ({
 
       {/* SHARE MODAL */}
       {isShareModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-neutral-50 w-[380px] rounded-xl shadow-xl p-6 animate-fadeIn">
-            <h2 className="text-lg font-semibold mb-4">Share File</h2>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
 
-            <input
-              type="email"
-              placeholder="Enter email address"
-              value={shareEmail}
-              onChange={(e) => setShareEmail(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-red-400" />
+          onClick={() => {
+            setIsShareModalOpen(false);
+            setShareEmail("");
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-fadeIn"
+          >
+            {/* HEADER */}
+            <div className="mb-5">
+              <h2 className="text-2xl font-semibold text-neutral-900">
+                Share Securely
+              </h2>
 
-            <div className="flex flex-col gap-2 mt-4">
+              <p className="text-sm text-neutral-500 mt-1">
+                Generate a protected sharing link for this file.
+              </p>
+            </div>
+
+            {/* FILE INFO */}
+            <div className="flex items-center gap-3 rounded-xl bg-neutral-50 border border-neutral-100 p-3 mb-5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white shadow-sm">
+                <Thumbnail
+                  type={type}
+                  extension={extension}
+                  url=""
+                  className="!size-10"
+                  imageClassName="!size-7"
+                />
+              </div>
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-neutral-800">
+                  {file.filename}
+                </p>
+
+                <p className="text-xs text-neutral-500">
+                  {file.size ? convertFileSize(file.size) : "—"}
+                  • {file.content_type}
+                </p>
+              </div>
+            </div>
+
+            {/* EMAIL */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-neutral-700">
+                Recipient Email
+              </label>
+
+              <input
+                type="email"
+                placeholder="Enter email address"
+                value={shareEmail}
+                onChange={(e) => setShareEmail(e.target.value)}
+                className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none transition focus:border-red-300 focus:ring-4 focus:ring-red-100"
+              />
+            </div>
+
+            {/* ACCESS OPTIONS */}
+            <div className="mt-5 space-y-4">
+
+              {/* EXPIRY */}
+              <div>
+                <label className="text-sm font-medium text-neutral-700 block mb-2">
+                  Link Expiry
+                </label>
+
+                <select
+                  className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none focus:border-red-300 focus:ring-4 focus:ring-red-100"
+                >
+                  <option>1 Hour</option>
+                  <option>24 Hours</option>
+                  <option>7 Days</option>
+                </select>
+              </div>
+
+              {/* PERMISSIONS */}
+              <div>
+                <label className="text-sm font-medium text-neutral-700 block mb-2">
+                  Permissions
+                </label>
+
+                <div className="flex flex-col gap-2 rounded-xl border border-neutral-100 bg-neutral-50 p-3">
+                  <label className="flex items-center gap-2 text-sm text-neutral-700">
+                    <input type="radio" name="permission" defaultChecked />
+                    View only
+                  </label>
+
+                  <label className="flex items-center gap-2 text-sm text-neutral-700">
+                    <input type="radio" name="permission" />
+                    Allow download
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* SECURITY INFO */}
+            <div className="mt-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+              <p className="text-xs leading-relaxed text-red-500">
+                SecureIt generates encrypted temporary sharing links for protected file access.
+              </p>
+            </div>
+
+            {/* ACTIONS */}
+            <div className="mt-6 flex flex-col gap-3">
               <button
                 onClick={() => {
                   setIsShareModalOpen(false);
                   setShareEmail("");
                 }}
-                className="w-full px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
+                className="w-full rounded-xl bg-neutral-100 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-200"
               >
                 Cancel
               </button>
@@ -247,13 +347,21 @@ const Card = ({
               <button
                 onClick={handleShare}
                 disabled={loadingShare}
-                className="w-full px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition disabled:opacity-50"
+                className={`w-full rounded-xl py-3 text-sm font-semibold text-white transition disabled:opacity-50 ${shareSuccess
+                  ? "bg-green-600"
+                  : "bg-black hover:bg-neutral-800"
+                  }`}
               >
-                {loadingShare ? "Sending..." : "Send Link"}
+                {shareSuccess
+                  ? "Link Generated Successfully ✓"
+                  : loadingShare
+                    ? "Generating..."
+                    : "Generate Secure Link"}
+
               </button>
             </div>
           </div>
-        </div>
+        </div >
       )}
       <FilePreviewModal
         open={previewOpen}
