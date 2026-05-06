@@ -12,13 +12,19 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <Link href="/">
-        <Image
-          src="/assets/icons/logo-full-brand.svg"
-          alt="logo"
-          width={160}
-          height={50}
-          className="hidden h-auto lg:block"
-        />
+        <div className="flex items-center gap-3">
+          <Image
+            src="/assets/icons/logo-brand.svg"
+            alt="SecureIt Logo"
+            width={52}
+            height={52}
+            className="object-contain"
+          />
+
+          <h1 className="text-2xl font-semibold tracking-tight text-[#f76b72]">
+            SecureIt
+          </h1>
+        </div>
 
         <Image
           src="/assets/icons/logo-brand.svg"
@@ -61,23 +67,8 @@ const Sidebar = () => {
         alt="illustration"
         width={506}
         height={418}
-        className="w-full"
+        className="w-full opacity-90"
       />
-
-      {/* TEMP STATIC USER */}
-      <div className="sidebar-user-info">
-        <Image
-          src="/assets/images/avatar.png"
-          alt="Avatar"
-          width={44}
-          height={44}
-          className="sidebar-user-avatar"
-        />
-        <div className="hidden lg:block">
-          <p className="subtitle-2 capitalize">User</p>
-          <p className="caption">user@email.com</p>
-        </div>
-      </div>
     </aside>
   );
 };

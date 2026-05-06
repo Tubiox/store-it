@@ -38,7 +38,7 @@ const Dashboard = () => {
     <div className="w-full px-6">
       <section className="w-full">
         <h2 className="text-xl font-semibold mb-4">
-          Recent files uploaded
+          Recent uploads
         </h2>
 
         {loading ? (

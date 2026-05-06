@@ -7,16 +7,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <section className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-rose-500 to-red-400 p-10 lg:flex xl:w-2/5">
         <div className="flex max-h-[800px] max-w-[430px] flex-col justify-center">
           <div className="space-y-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/assets/icons/logo-brand.svg"
-                alt="SecureIt Logo"
-                width={68}
-                height={68}
-                className="object-contain opacity-100"
-              />
+            <div className="flex items-center gap-2.5 -mt-1">
+              <div className="flex items-center justify-center">
+                <Image
+                  src="/assets/icons/logo-brand.svg"
+                  alt="SecureIt Logo"
+                  width={54}
+                  height={54}
+                  className="object-contain brightness-110"
+                />
+              </div>
 
-              <h1 className="text-3xl font-semibold tracking-tight text-white">
+              <h1 className="text-[30px] font-medium tracking-tight text-white">
                 SecureIt
               </h1>
             </div>
