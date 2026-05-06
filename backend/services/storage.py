@@ -19,7 +19,7 @@ def ensure_bucket():
         print("Creating bucket:", BUCKET)
         s3.create_bucket(Bucket=BUCKET)
 
-def upload_file(file_bytes, key):
+def upload_file(file_bytes, key, content_type):
     try:
         ensure_bucket()
 
@@ -30,8 +30,8 @@ def upload_file(file_bytes, key):
             Bucket=BUCKET,
             Key=key,
             Body=file_bytes,
-            ContentType="application/octet-stream"
-        )
+            ContentType=content_type        
+)
 
         print("MinIO response:", response)
         print("Upload successful")

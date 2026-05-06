@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, APIRouter, UploadFile, Request,File
-from fastapi.responses import Response
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 from routes.auth import get_current_user
 from services.storage import upload_file, download_file
 from utils.encryption import encrypt, decrypt
@@ -17,8 +18,6 @@ class ShareRequest(BaseModel):
     email: EmailStr
 
 router = APIRouter()
-
-
 
 # UPLOAD FILE
 @router.post("/upload")
@@ -40,8 +39,13 @@ async def upload(
 
         file_id = ObjectId()
         storage_key = f"{current_user['_id']}/{file_id}.enc"
-
-        upload_file(encrypted_data, storage_key)
+        
+        
+        upload_file(
+            encrypted_data,
+            storage_key,
+            file.content_type
+            )
 
         file_data = {
             "_id": file_id,
@@ -79,20 +83,61 @@ async def download(
         if str(file.get("owner_id")) != str(current_user["_id"]):
            raise HTTPException(status_code=403, detail="Not allowed")
 
-        # Download encrypted file
         encrypted_data = download_file(file["storage_key"])
 
-        # Decrypt file
         decrypted_data = decrypt(encrypted_data)
-
-        return Response(
-            content=decrypted_data,
-            media_type=file["content_type"],
-        )
-
+        
+        return StreamingResponse(
+    BytesIO(decrypted_data),
+    media_type=file["content_type"],
+    headers={
+        "Content-Disposition": "inline"
+    }
+)
     except Exception as e:
         print("DOWNLOAD ERROR:", str(e)) 
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/preview/{file_id}")
+async def preview_file(
+    file_id: str,
+    current_user=Depends(get_current_user)
+):
+    try:
+        file = files_collection.find_one({
+            "_id": ObjectId(file_id)
+        })
+
+        if not file:
+            raise HTTPException(
+                status_code=404,
+                detail="File not found"
+            )
+
+        if str(file["owner_id"]) != str(current_user["_id"]):
+            raise HTTPException(
+                status_code=403,
+                detail="Not allowed"
+            )
+
+        encrypted_data = download_file(file["storage_key"])
+
+        decrypted_data = decrypt(encrypted_data)
+
+        return StreamingResponse(
+    BytesIO(decrypted_data),
+    media_type=file["content_type"],
+    headers={
+        "Content-Disposition": "inline"
+    }
+)
+
+    except Exception as e:
+        print("PREVIEW ERROR:", str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 
 # GET USER FILES
@@ -104,12 +149,10 @@ def get_files(current_user=Depends(get_current_user)):
             "is_deleted": False
         }))
 
-        # Convert ObjectId to string
         for file in files:
             file["_id"] = str(file["_id"])
             file["owner_id"] = str(file["owner_id"])
 
-        #  ALWAYS return structured response
         return {
     "documents": files,
     "total": len(files)
@@ -120,13 +163,16 @@ def get_files(current_user=Depends(get_current_user)):
 
 
 @router.post("/logout")
-def logout(response: Response):
+def logout(response: StreamingResponse):
     response.delete_cookie(
         key="access_token",
     path="/"
     )
     return {"message": "Logged out"}
 
+
+
+#delete
 @router.delete("/delete/{file_id}")
 def delete_file(file_id: str, user: dict = Depends(get_current_user)):
 
@@ -147,6 +193,8 @@ def delete_file(file_id: str, user: dict = Depends(get_current_user)):
 
     return {"message": "File deleted"}
 
+
+#share
 @router.post("/share/{file_id}")
 async def create_share(
     file_id: str,
@@ -170,12 +218,13 @@ async def create_share(
         "_id": ObjectId(),
         "file_id": ObjectId(file_id),
         "token": token,
+        "email": email,
         "created_at": datetime.utcnow(),
         "expires_at": datetime.utcnow() + timedelta(hours=1) 
     }
 
     shares_collection.insert_one(share)
-    link = f"http://localhost:8000/files/shared/{token}"
+    link = f"http://localhost:3000/shared/{token}"
 
     background_tasks.add_task(send_share_email, email, link)
 
@@ -184,6 +233,44 @@ async def create_share(
     "share_url": link
 }
 
+@router.get("/shared/info/{token}")
+def get_shared_file_info(token: str):
+
+    share = shares_collection.find_one({"token": token})
+
+    if not share:
+        raise HTTPException(
+            status_code=404,
+            detail="Invalid link"
+        )
+
+    if (
+        share.get("expires_at")
+        and share["expires_at"] < datetime.utcnow()
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Link expired"
+        )
+
+    file = files_collection.find_one({
+        "_id": share["file_id"]
+    })
+
+    if not file:
+        raise HTTPException(
+            status_code=404,
+            detail="File not found"
+        )
+
+    return {
+    "filename": file["filename"],
+    "content_type": file["content_type"],
+    "uploaded_at": file["uploaded_at"],
+    "preview_url": f"http://localhost:8000/files/shared/{token}",
+    "expires_at": share["expires_at"],
+    "shared_with": share.get("email"),
+}
 
 @router.get("/shared/{token}")
 def access_shared_file(token: str):
@@ -203,8 +290,11 @@ def access_shared_file(token: str):
 
     encrypted_data = download_file(file["storage_key"])
     decrypted_data = decrypt(encrypted_data)
-
-    return Response(
-            content=decrypted_data,
-            media_type=file["content_type"],
-        )
+    
+    return StreamingResponse(
+    BytesIO(decrypted_data),
+    media_type=file["content_type"],
+    headers={
+        "Content-Disposition": "inline"
+    }
+)

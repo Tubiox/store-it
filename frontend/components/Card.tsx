@@ -5,7 +5,9 @@ import { convertFileSize, getFileType } from "@/lib/utils";
 import FormattedDateTime from "@/components/FormattedDateTime";
 import { MoreVertical } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import FilePreviewModal from "@/components/FilePreviewModal";
 import { fetchWithAuth } from "@/lib/api";
+
 
 const Card = ({
   file,
@@ -17,6 +19,7 @@ const Card = ({
   const { type, extension } = getFileType(file.filename);
 
   const [open, setOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [loadingShare, setLoadingShare] = useState(false);
@@ -110,39 +113,45 @@ const Card = ({
 
       navigator.clipboard.writeText(data.share_url);
 
-      console.log("Link copied");
+
+      alert(`Secure preview link sent to ${shareEmail}`);
+
       setIsShareModalOpen(false);
       setShareEmail("");
     } catch (err) {
       console.error(err);
-      alert("Share failed");
+      alert("Could not send secure link");
     } finally {
       setLoadingShare(false);
     }
   };
 
   // PREVIEW
-  const previewUrl = `http://localhost:8000/files/download/${file._id}`;
-
+  const previewUrl = `http://localhost:8000/files/preview/${file._id}`;
   return (
     <>
       {/* CARD */}
-      <div
-        className={`group relative bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-          }`}
+      <div className={`group relative bg-neutral-50 rounded-xl p-4 transition-all duration-300 
+  shadow-[0_2px_10px_rgba(0,0,0,0.04)] 
+  hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] 
+  hover:-translate-y-1 
+  ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
       >
         {/* PREVIEW */}
-        <div className="mb-3 overflow-hidden rounded-lg">
+        <div
+          onClick={() => setPreviewOpen(true)}
+          className="mb-3 h-40 w-full overflow-hidden rounded-lg bg-gray-100 cursor-pointer"
+        >
           {file.content_type?.startsWith("image") ? (
-            <img
-              src={previewUrl}
-              className="w-full h-32 object-cover"
-            />
+            <img src={previewUrl} className="w-full h-full object-cover" />
           ) : file.content_type === "application/pdf" ? (
-            <iframe
-              src={previewUrl}
-              className="w-full h-32"
-            />
+            <div className="relative w-full h-40 overflow-hidden">
+              <iframe
+                src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                className="w-full h-full pointer-events-none"
+              />
+              <div className="absolute inset-0 pointer-events-none" />
+            </div>
           ) : (
             <Thumbnail
               type={type}
@@ -156,8 +165,13 @@ const Card = ({
 
         {/* MENU */}
         <div className="absolute top-3 right-3" ref={ref}>
-          <button onClick={() => setOpen((prev) => !prev)}>
-            <MoreVertical className="w-5 h-5 text-gray-500" />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen((prev) => !prev);
+            }}
+          >
+            <MoreVertical className="w-5 h-5 text-neutral-500" />
           </button>
 
           {open && (
@@ -181,7 +195,7 @@ const Card = ({
 
               <button
                 onClick={handleDelete}
-                className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2 text-red-500 hover:bg-neutral-100"
               >
                 {deleting ? "Deleting..." : "Delete"}
               </button>
@@ -193,14 +207,14 @@ const Card = ({
         <div className="space-y-1">
           <p className="font-semibold text-sm truncate">{file.filename}</p>
 
-          <p className="text-xs text-gray-500">{file.content_type}</p>
+          <p className="text-xs text-neutral-500">{file.content_type}</p>
 
           <FormattedDateTime
             date={file.uploaded_at}
             className="text-xs text-gray-400"
           />
 
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-neutral-500">
             {file.size ? convertFileSize(file.size) : "—"}
           </p>
         </div>
@@ -209,7 +223,7 @@ const Card = ({
       {/* SHARE MODAL */}
       {isShareModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white w-[380px] rounded-xl shadow-xl p-6 animate-fadeIn">
+          <div className="bg-neutral-50 w-[380px] rounded-xl shadow-xl p-6 animate-fadeIn">
             <h2 className="text-lg font-semibold mb-4">Share File</h2>
 
             <input
@@ -241,6 +255,11 @@ const Card = ({
           </div>
         </div>
       )}
+      <FilePreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        file={file}
+      />
     </>
   );
 };
