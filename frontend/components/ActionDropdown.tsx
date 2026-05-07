@@ -8,6 +8,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Download,
+  Share2,
+  Trash2,
+  Pencil,
+  Info,
+} from "lucide-react";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -18,13 +25,9 @@ import {
 import { useState } from "react";
 import Image from "next/image";
 import { actionsDropdownItems } from "@/constants";
-import Link from "next/link";
-import { constructDownloadUrl } from "@/lib/utils";
 import { fetchWithAuth } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { usePathname } from "next/navigation";
-import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 
 const ActionDropdown = ({ file }: { file: CustomFile }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,9 +35,7 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
   const [action, setAction] = useState<ActionType | null>(null);
   const [name, setName] = useState(file.filename);
   const [isLoading, setIsLoading] = useState(false);
-  const [emails, setEmails] = useState<string[]>([]);
 
-  const path = usePathname();
 
   const closeAllModals = () => {
     setIsModalOpen(false);
@@ -50,6 +51,16 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
     let success = false;
 
     const actions = {
+      rename: async () => {
+        await fetchWithAuth(`/rename/${file._id}`, {
+          method: "PUT",
+          body: JSON.stringify({
+            filename: name,
+          }),
+        });
+
+        return { status: "success" };
+      },
       delete: async () => {
         await fetchWithAuth(`/delete/${file._id}`, {
           method: "DELETE",
@@ -123,55 +134,119 @@ const ActionDropdown = ({ file }: { file: CustomFile }) => {
             height={34}
           />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel className="max-w-[200px] truncate">
+        <DropdownMenuContent className="w-[230px] rounded-2xl border border-neutral-200 bg-white p-2 shadow-2xl">
+          <DropdownMenuLabel className="max-w-[200px] truncate px-3 py-2 text-sm font-semibold text-neutral-500">
             {file.filename}
           </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {actionsDropdownItems.map((actionItem) => (
-            <DropdownMenuItem
-              key={actionItem.value}
-              className="shad-dropdown-item"
-              onClick={() => {
-                setAction(actionItem);
 
-                if (
-                  ["rename", "share", "delete", "details"].includes(
-                    actionItem.value,
-                  )
-                ) {
-                  setIsModalOpen(true);
-                }
-              }}
-            >
-              {actionItem.value === "download" ? (
-                <a
-                  href={`http://localhost:8000/download/${file._id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2"
-                >
-                  <Image
-                    src={actionItem.icon}
-                    alt={actionItem.label}
-                    width={30}
-                    height={30}
-                  />
+          <DropdownMenuSeparator />
+
+
+
+          {actionsDropdownItems.map((actionItem) => {
+            const icons = {
+              download: (
+                <Download
+                  size={18}
+                  className="shrink-0"
+                  style={{
+                    color: "#38bdf8",
+                    strokeWidth: 2.2,
+                    display: "block",
+                  }}
+                />
+              ),
+
+              share: (
+                <Share2
+                  size={18}
+                  className="shrink-0"
+                  style={{
+                    color: "#fb923c",
+                    strokeWidth: 2.2,
+                    display: "block",
+                  }}
+                />
+              ),
+
+              rename: (
+                <Pencil
+                  size={18}
+                  className="shrink-0"
+                  style={{
+                    color: "#8b5cf6",
+                    strokeWidth: 2.2,
+                    display: "block",
+                  }}
+                />
+              ),
+
+              delete: (
+                <Trash2
+                  size={18}
+                  className="shrink-0"
+                  style={{
+                    color: "#f43f5e",
+                    strokeWidth: 2.2,
+                    display: "block",
+                  }}
+                />
+              ),
+
+              details: (
+                <Info
+                  size={18}
+                  className="shrink-0"
+                  style={{
+                    color: "#737373",
+                    strokeWidth: 2.2,
+                    display: "block",
+                  }}
+                />
+              ),
+            };
+
+            const content = (
+              <div className="flex w-full items-center gap-3">
+                {icons[actionItem.value as keyof typeof icons]}
+
+                <span className="text-sm font-medium text-neutral-700">
                   {actionItem.label}
-                </a>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Image
-                    src={actionItem.icon}
-                    alt={actionItem.label}
-                    width={30}
-                    height={30}
-                  />
-                  {actionItem.label}
-                </div>
-              )}
-            </DropdownMenuItem>
-          ))}
+                </span>
+              </div>
+            );
+
+            return (
+              <DropdownMenuItem
+                key={actionItem.value}
+                className="cursor-pointer rounded-xl px-3 py-2 focus:bg-neutral-100"
+                onClick={() => {
+                  setAction(actionItem);
+
+                  if (
+                    ["rename", "share", "delete", "details"].includes(
+                      actionItem.value
+                    )
+                  ) {
+                    setIsModalOpen(true);
+                  }
+                }}
+              >
+                {actionItem.value === "download" ? (
+                  <a
+                    href={`http://localhost:8000/download/${file._id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  content
+                )}
+              </DropdownMenuItem>
+            );
+          })}
         </DropdownMenuContent>
       </DropdownMenu>
 

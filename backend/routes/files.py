@@ -298,3 +298,34 @@ def access_shared_file(token: str):
         "Content-Disposition": "inline"
     }
 )
+
+@router.put("/rename/{file_id}")
+async def rename_file(
+    file_id: str,
+    request: Request,
+    user=Depends(get_current_user)
+):
+    data = await request.json()
+    new_filename = data.get("filename")
+
+    if not new_filename:
+        raise HTTPException(status_code=400, detail="Filename required")
+
+    result = files_collection.update_one(
+    {
+        "_id": ObjectId(file_id),
+        "owner_id": (user["_id"])
+    },
+        {
+            "$set": {
+                "filename": new_filename
+            }
+        }
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return {
+        "message": "File renamed successfully"
+    }
