@@ -171,6 +171,10 @@ const SharedLinksPage = () => {
                                         <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-500">
                                             Revoked
                                         </span>
+                                    ) : new Date(share.expires_at) < new Date() ? (
+                                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-600">
+                                            Expired
+                                        </span>
                                     ) : (
                                         <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-600">
                                             Active

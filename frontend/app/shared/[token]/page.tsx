@@ -28,7 +28,7 @@ const SharedFilePage = () => {
 
                 navigator.clipboard.writeText("");
 
-                alert("Screenshots are disabled.");
+                alert("Protected content detected.");
             }
 
             // F12
