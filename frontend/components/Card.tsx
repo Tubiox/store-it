@@ -35,9 +35,10 @@ const Card = ({
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [newFilename, setNewFilename] = useState(file.filename);
-  const [displayFilename, setDisplayFilename] = useState(file.filename);
   const [renaming, setRenaming] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [expiry, setExpiry] = useState("1h");
+  const [permission, setPermission] = useState("view");
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -118,7 +119,11 @@ const Card = ({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email: shareEmail }),
+          body: JSON.stringify({
+            email: shareEmail,
+            expiry,
+            permission,
+          }),
         }
       );
 
@@ -453,12 +458,15 @@ const Card = ({
                   Link Expiry
                 </label>
 
+
                 <select
-                  className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none focus:border-red-300 focus:ring-4 focus:ring-red-100"
+                  value={expiry}
+                  onChange={(e) => setExpiry(e.target.value)}
+                  className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none transition focus:border-red-300 focus:ring-4focus:ring-red-100"
                 >
-                  <option>1 Hour</option>
-                  <option>24 Hours</option>
-                  <option>7 Days</option>
+                  <option value="1h">1 Hour</option>
+                  <option value="24h">24 Hours</option>
+                  <option value="7d">7 Days</option>
                 </select>
               </div>
 
@@ -470,12 +478,20 @@ const Card = ({
 
                 <div className="flex flex-col gap-2 rounded-xl border border-neutral-100 bg-neutral-50 p-3">
                   <label className="flex items-center gap-2 text-sm text-neutral-700">
-                    <input type="radio" name="permission" defaultChecked />
+                    <input
+                      type="radio"
+                      checked={permission === "view"}
+                      onChange={() => setPermission("view")}
+                    />
                     View only
                   </label>
 
                   <label className="flex items-center gap-2 text-sm text-neutral-700">
-                    <input type="radio" name="permission" />
+                    <input
+                      type="radio"
+                      checked={permission === "download"}
+                      onChange={() => setPermission("download")}
+                    />
                     Allow download
                   </label>
                 </div>

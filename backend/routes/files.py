@@ -16,6 +16,8 @@ from pydantic import BaseModel, EmailStr
 
 class ShareRequest(BaseModel):
     email: EmailStr
+    expiry: str
+    permission: str
 
 router = APIRouter()
 
@@ -196,6 +198,7 @@ def delete_file(file_id: str, user: dict = Depends(get_current_user)):
 
 #share
 @router.post("/share/{file_id}")
+
 async def create_share(
     file_id: str,
     request: ShareRequest,
@@ -214,20 +217,45 @@ async def create_share(
 
     token = generate_token()
 
-    share = {
-        "_id": ObjectId(),
-        "file_id": ObjectId(file_id),
-        "token": token,
-        "email": email,
-        "created_at": datetime.utcnow(),
-        "expires_at": datetime.utcnow() + timedelta(hours=1) 
+    expiry_map = {
+        "1h": timedelta(hours=1),
+        "24h": timedelta(hours=24),
+        "7d": timedelta(days=7),
     }
+
+    expires_at = datetime.utcnow() + expiry_map.get(
+        request.expiry,
+        timedelta(hours=1)
+    )
+    
+    share = {
+    "_id": ObjectId(),
+    "file_id": ObjectId(file_id),
+    "token": token,
+
+    "email": email,
+
+    "permission": request.permission,
+
+    "watermark": True,
+
+    "expires_at": expires_at,
+
+    "created_at": datetime.utcnow(),
+
+    "revoked": False,
+
+    "preview_count": 0,
+    "download_count": 0,
+
+    "last_accessed_at": None
+}
 
     shares_collection.insert_one(share)
     link = f"http://localhost:3000/shared/{token}"
 
     background_tasks.add_task(send_share_email, email, link)
-
+    
     return {
     "message": "Share link sent to email",
     "share_url": link
@@ -243,7 +271,11 @@ def get_shared_file_info(token: str):
             status_code=404,
             detail="Invalid link"
         )
-
+    if share.get("revoked"):
+        raise HTTPException(
+            status_code=403,
+            detail="Link revoked"
+        )
     if (
         share.get("expires_at")
         and share["expires_at"] < datetime.utcnow()
@@ -267,8 +299,15 @@ def get_shared_file_info(token: str):
     "filename": file["filename"],
     "content_type": file["content_type"],
     "uploaded_at": file["uploaded_at"],
+
     "preview_url": f"http://localhost:8000/files/shared/{token}",
+
+    "download_url": f"http://localhost:8000/files/shared/download/{token}",
+
+    "permission": share.get("permission", "view"),
+
     "expires_at": share["expires_at"],
+
     "shared_with": share.get("email"),
 }
 
@@ -278,7 +317,11 @@ def access_shared_file(token: str):
 
     if not share:
         raise HTTPException(status_code=404, detail="Invalid link")
-
+    if share.get("revoked"):
+        raise HTTPException(
+            status_code=403,
+            detail="Link revoked"
+        )
     # expiry check
     if share.get("expires_at") and share["expires_at"] < datetime.utcnow():
         raise HTTPException(status_code=403, detail="Link expired")
@@ -291,6 +334,27 @@ def access_shared_file(token: str):
     encrypted_data = download_file(file["storage_key"])
     decrypted_data = decrypt(encrypted_data)
     
+    shares_collection.update_one(
+    {"_id": share["_id"]},
+    {
+        "$inc": {
+            "preview_count": 1
+        },
+        "$set": {
+            "last_accessed_at": datetime.utcnow()
+        }
+    }
+)
+    shares_collection.update_one(
+    {"_id": share["_id"]},
+    {
+        "$inc": {"preview_count": 1},
+        "$set": {
+            "last_accessed_at": datetime.utcnow()
+        }
+    }
+)
+
     return StreamingResponse(
     BytesIO(decrypted_data),
     media_type=file["content_type"],
@@ -299,6 +363,227 @@ def access_shared_file(token: str):
     }
 )
 
+@router.get("/shared/download/{token}")
+def shared_download(token: str):
+
+    share = shares_collection.find_one({"token": token})
+
+    if not share:
+        raise HTTPException(
+            status_code=404,
+            detail="Invalid link"
+        )
+
+    # revoked check
+    if share.get("revoked"):
+        raise HTTPException(
+            status_code=403,
+            detail="Link revoked"
+        )
+
+    # expiry check
+    if (
+        share.get("expires_at")
+        and share["expires_at"] < datetime.utcnow()
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Link expired"
+        )
+
+    # permission check
+    if share.get("permission") != "download":
+        raise HTTPException(
+            status_code=403,
+            detail="Downloads disabled"
+        )
+
+    file = files_collection.find_one({
+        "_id": share["file_id"]
+    })
+
+    if not file:
+        raise HTTPException(
+            status_code=404,
+            detail="File not found"
+        )
+
+    encrypted_data = download_file(
+        file["storage_key"]
+    )
+
+    decrypted_data = decrypt(encrypted_data)
+
+    # LOG DOWNLOAD
+    shares_collection.update_one(
+        {"_id": share["_id"]},
+        {
+            "$inc": {
+                "download_count": 1
+            },
+            "$set": {
+                "last_accessed_at": datetime.utcnow()
+            }
+        }
+    )
+
+    return StreamingResponse(
+        BytesIO(decrypted_data),
+        media_type=file["content_type"],
+        headers={
+            "Content-Disposition":
+            f'attachment; filename="{file["filename"]}"'
+        }
+    )
+
+#download 
+@router.get("/shared/download/{token}")
+def shared_download(token: str):
+
+    share = shares_collection.find_one({"token": token})
+
+    if not share:
+        raise HTTPException(status_code=404, detail="Invalid link")
+
+    if share.get("revoked"):
+        raise HTTPException(status_code=403, detail="Link revoked")
+
+    if share["expires_at"] < datetime.utcnow():
+        raise HTTPException(status_code=403, detail="Link expired")
+
+    if share.get("permission") != "download":
+        raise HTTPException(status_code=403, detail="Downloads disabled")
+
+    file = files_collection.find_one({
+        "_id": share["file_id"]
+    })
+
+    encrypted_data = download_file(file["storage_key"])
+    decrypted_data = decrypt(encrypted_data)
+
+    shares_collection.update_one(
+        {"_id": share["_id"]},
+        {
+            "$inc": {"download_count": 1},
+            "$set": {"last_accessed_at": datetime.utcnow()}
+        }
+    )
+
+    return StreamingResponse(
+        BytesIO(decrypted_data),
+        media_type=file["content_type"],
+        headers={
+            "Content-Disposition":
+            f'attachment; filename="{file["filename"]}"'
+        }
+    )
+
+@router.put("/share/revoke/{token}")
+def revoke_share(
+    token: str,
+    user=Depends(get_current_user)
+):
+    share = shares_collection.find_one({"token": token})
+
+    if not share:
+        raise HTTPException(status_code=404)
+
+    file = files_collection.find_one({
+        "_id": share["file_id"]
+    })
+
+    if file["owner_id"] != user["_id"]:
+        raise HTTPException(status_code=403)
+
+    shares_collection.update_one(
+        {"token": token},
+        {
+            "$set": {"revoked": True}
+        }
+    )
+
+    return {"message": "Link revoked"}
+
+#share dashboard 
+@router.get("/shares")
+def get_shares(user=Depends(get_current_user)):
+
+    user_files = list(files_collection.find({
+        "owner_id": user["_id"]
+    }))
+
+    file_ids = [f["_id"] for f in user_files]
+
+    shares = list(shares_collection.find({
+        "file_id": {"$in": file_ids}
+    }))
+
+    result = []
+
+    for share in shares:
+        file = files_collection.find_one({
+            "_id": share["file_id"]
+        })
+
+        result.append({
+            "token": share["token"],
+            "email": share.get("email"),
+            "filename": file["filename"],
+            "permission": share.get("permission"),
+            "expires_at": share.get("expires_at"),
+            "preview_count": share.get("preview_count", 0),
+            "download_count": share.get("download_count", 0),
+            "revoked": share.get("revoked", False),
+        })
+
+    return result
+
+@router.put("/share/revoke/{token}")
+def revoke_share(
+    token: str,
+    user=Depends(get_current_user)
+):
+
+    share = shares_collection.find_one({
+        "token": token
+    })
+
+    if not share:
+        raise HTTPException(
+            status_code=404,
+            detail="Share not found"
+        )
+
+    file = files_collection.find_one({
+        "_id": share["file_id"]
+    })
+
+    if not file:
+        raise HTTPException(
+            status_code=404,
+            detail="File not found"
+        )
+
+    if file["owner_id"] != user["_id"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Not allowed"
+        )
+
+    shares_collection.update_one(
+        {"token": token},
+        {
+            "$set": {
+                "revoked": True
+            }
+        }
+    )
+
+    return {
+        "message": "Share revoked"
+    }   
+
+#rename
 @router.put("/rename/{file_id}")
 async def rename_file(
     file_id: str,
@@ -329,3 +614,73 @@ async def rename_file(
     return {
         "message": "File renamed successfully"
     }
+
+@router.get("/shares")
+def get_all_shares(user=Depends(get_current_user)):
+
+    # get all user files
+    user_files = list(
+        files_collection.find({
+            "owner_id": user["_id"]
+        })
+    )
+
+    file_ids = [file["_id"] for file in user_files]
+
+    # get all shares of those files
+    shares = list(
+        shares_collection.find({
+            "file_id": {
+                "$in": file_ids
+            }
+        })
+    )
+
+    results = []
+
+    for share in shares:
+
+        file = files_collection.find_one({
+            "_id": share["file_id"]
+        })
+
+        if not file:
+            continue
+
+        results.append({
+            "token": share["token"],
+
+            "filename": file["filename"],
+
+            "email": share.get("email"),
+
+            "permission": share.get(
+                "permission",
+                "view"
+            ),
+
+            "expires_at": share.get(
+                "expires_at"
+            ),
+
+            "preview_count": share.get(
+                "preview_count",
+                0
+            ),
+
+            "download_count": share.get(
+                "download_count",
+                0
+            ),
+
+            "revoked": share.get(
+                "revoked",
+                False
+            ),
+
+            "created_at": share.get(
+                "created_at"
+            ),
+        })
+
+    return results

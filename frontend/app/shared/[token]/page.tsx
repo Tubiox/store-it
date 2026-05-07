@@ -193,7 +193,16 @@ const SharedFilePage = () => {
                     </video>
                 )
             }
+            {file.permission === "download" && (
+                <a
+                    href={file.download_url}
+                    className="fixed bottom-6 right-6 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black shadow-xl transition hover:scale-105"
+                >
+                    Download File
+                </a>
+            )}
         </div >
+
     );
 };
 

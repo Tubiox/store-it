@@ -4,6 +4,11 @@ export const navItems = [
     icon: "/assets/icons/dashboard.svg",
     url: "/",
   },
+   {
+    name: "Shared Links",
+    url: "/shared-links",
+    icon: "/assets/icons/share.svg",
+  },
   {
     name: "Documents",
     icon: "/assets/icons/file-document.svg",
