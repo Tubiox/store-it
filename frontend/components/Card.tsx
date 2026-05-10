@@ -372,17 +372,17 @@ const Card = ({
         </div>
 
         {/* INFO */}
-        <div className="space-y-1">
-          <p className="font-semibold text-sm truncate" title={file.filename}>{file.filename}</p>
+        <div className="space-y-1 w-full min-w-0">
+          <p className="font-semibold text-sm truncate w-full" title={file.filename}>{file.filename}</p>
 
-          <p className="text-xs text-neutral-500">{file.content_type}</p>
+          <p className="text-xs text-neutral-500 truncate w-full">{file.content_type}</p>
 
           <FormattedDateTime
             date={file.uploaded_at}
-            className="text-xs text-gray-400"
+            className="text-xs text-gray-400 truncate w-full"
           />
 
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-500 truncate w-full">
             {file.size ? convertFileSize(file.size) : "—"}
           </p>
         </div>

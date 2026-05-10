@@ -39,6 +39,17 @@ export const FilesProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const checkAuth = useCallback(async () => {
+    try {
+      const res = await fetch(`${window.location.origin}/api/auth/me`, {
+        credentials: "include",
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }, []);
+
   const fetchFiles = useCallback(async () => {
     try {
       setLoading(true);
@@ -71,8 +82,16 @@ export const FilesProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    fetchFiles();
-  }, [fetchFiles, refreshKey]);
+    const init = async () => {
+      const isAuthenticated = await checkAuth();
+      if (isAuthenticated) {
+        fetchFiles();
+      } else {
+        setLoading(false);
+      }
+    };
+    init();
+  }, [checkAuth, fetchFiles, refreshKey]);
 
   return (
     <FilesContext.Provider
