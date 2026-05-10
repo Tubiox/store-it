@@ -14,6 +14,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import FilePreviewModal from "@/components/FilePreviewModal";
 import { fetchWithAuth } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 
 const Card = ({
@@ -23,6 +24,7 @@ const Card = ({
   file: any;
   onDeleteSuccess?: (id: string) => void;
 }) => {
+  const router = useRouter();
   const { type, extension } = getFileType(file.filename);
 
   const [open, setOpen] = useState(false);
@@ -70,6 +72,7 @@ const Card = ({
 
       setTimeout(() => {
         onDeleteSuccess?.(file._id as string);
+        router.refresh();
       }, 250);
     } catch (err) {
       console.error("Delete error:", err);
@@ -370,7 +373,7 @@ const Card = ({
 
         {/* INFO */}
         <div className="space-y-1">
-          <p className="font-semibold text-sm truncate">{file.filename}</p>
+          <p className="font-semibold text-sm truncate" title={file.filename}>{file.filename}</p>
 
           <p className="text-xs text-neutral-500">{file.content_type}</p>
 

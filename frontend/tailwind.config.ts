@@ -11,24 +11,24 @@ const config: Config = {
   	extend: {
   		colors: {
   			brand: {
-  				'100': '#EA6365',
-  				DEFAULT: '#FA7275'
+  				'100': '#4338CA',
+  				DEFAULT: '#3730A3'
   			},
-  			red: '#FF7474',
-  			error: '#b80000',
-  			green: '#3DD9B3',
-  			blue: '#56B8FF',
-  			pink: '#EEA8FD',
-  			orange: '#F9AB72',
+  			red: '#DC2626',
+  			error: '#B91C1C',
+  			green: '#059669',
+  			blue: '#3B82F6',
+  			purple: '#7C3AED',
+  			orange: '#EA580C',
   			light: {
-  				'100': '#333F4E',
-  				'200': '#A3B2C7',
-  				'300': '#F2F5F9',
-  				'400': '#F2F4F8'
+  				'100': '#1E293B',
+  				'200': '#64748B',
+  				'300': '#E2E8F0',
+  				'400': '#F1F5F9'
   			},
   			dark: {
-  				'100': '#04050C',
-  				'200': '#131524'
+  				'100': '#0F172A',
+  				'200': '#1E293B'
   			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -76,8 +76,8 @@ const config: Config = {
   		},
   		boxShadow: {
   			'drop-1': '0px 10px 30px 0px rgba(66, 71, 97, 0.1)',
-  			'drop-2': '0 8px 30px 0 rgba(65, 89, 214, 0.3)',
-  			'drop-3': '0 8px 30px 0 rgba(65, 89, 214, 0.1)'
+  			'drop-2': '0 8px 30px 0 rgba(99, 102, 241, 0.3)',
+  			'drop-3': '0 8px 30px 0 rgba(99, 102, 241, 0.15)'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -91,8 +91,8 @@ const config: Config = {
   				},
   				'20%,50%': {
   					opacity: '0'
-  				}
-  			}
+				}
+			}
   		},
   		animation: {
   			'caret-blink': 'caret-blink 1.25s ease-out infinite'

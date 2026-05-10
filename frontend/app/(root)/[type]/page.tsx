@@ -1,38 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Sort from "@/components/Sort";
 import Card from "@/components/Card";
-import { fetchWithAuth } from "@/lib/api";
 import { useParams } from "next/navigation";
+import { useFiles } from "@/contexts/FilesContext";
 
 const Page = () => {
   const { type } = useParams();
+  const { files, loading, removeFile } = useFiles();
 
-  const [files, setFiles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchFiles = async () => {
-    try {
-      setLoading(true);
-
-      const endpoint = type ? `/files?type=${type}` : "/files";
-
-      const data = await fetchWithAuth(endpoint);
-
-      setFiles(data?.documents || []);
-    } catch (err) {
-      console.error("Error fetching files:", err);
-      setFiles([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchFiles();
-  }, [type]);
-
-  //  FILTER LOGIC
+  // FILTER LOGIC
   const filteredFiles = files.filter((file) => {
     if (type === "images") {
       return file.content_type?.startsWith("image");
@@ -88,8 +66,8 @@ const Page = () => {
         <p className="empty-list">Loading...</p>
       ) : filteredFiles.length > 0 ? (
         <section className="file-list">
-          {filteredFiles.map((file: any) => (
-           <Card key={file._id} file={file} onDeleteSuccess={fetchFiles} />))}
+          {filteredFiles.map((file) => (
+           <Card key={file._id} file={file} onDeleteSuccess={removeFile} />))}
         </section>
       ) : (
         <p className="empty-list">No files found</p>

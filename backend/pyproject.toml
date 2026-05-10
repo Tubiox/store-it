@@ -8,6 +8,7 @@ dependencies = [
     "boto3>=1.42.84",
     "cryptography>=46.0.7",
     "fastapi>=0.135.3",
+    "fastapi-mail>=1.6.2",
     "minio>=7.2.20",
     "pymongo>=4.16.0",
     "python-dotenv>=1.2.2",

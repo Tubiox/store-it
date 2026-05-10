@@ -11,14 +11,16 @@ import { MAX_FILE_SIZE } from "@/constants";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
+import { useFiles } from "@/contexts/FilesContext";
+
 interface Props {
   className?: string;
-  onUploadSuccess?: () => void;
 }
 
-const FileUploader = ({ className, onUploadSuccess }: Props) => {
+const FileUploader = ({ className }: Props) => {
   const { toast } = useToast();
   const router = useRouter();
+  const { fetchFiles, addFile } = useFiles();
   const [files, setFiles] = useState<File[]>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -31,7 +33,7 @@ const FileUploader = ({ className, onUploadSuccess }: Props) => {
         description: "You are not logged in",
         className: "error-toast",
       });
-      onUploadSuccess?.();
+      fetchFiles();
       return;
     }
 
@@ -65,7 +67,7 @@ const FileUploader = ({ className, onUploadSuccess }: Props) => {
           description: `${file.name} uploaded successfully`,
         });
 
-        onUploadSuccess?.();
+        fetchFiles();
         router.refresh();
 
         setFiles((prev) => prev.filter((f) => f.name !== file.name));
@@ -78,7 +80,7 @@ const FileUploader = ({ className, onUploadSuccess }: Props) => {
         });
       }
     }
-  }, [toast, router, onUploadSuccess]);
+  }, [toast, router, fetchFiles]);
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
