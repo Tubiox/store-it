@@ -318,45 +318,7 @@ const Profile = () => {
         )}
       </div>
 
-      {/* Security Section */}
-      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 lg:p-8">
-        <h3 className="text-lg font-semibold text-slate-800 mb-6 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-indigo-600" />
-          Security & Privacy
-        </h3>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200/60">
-            <div>
-              <h4 className="font-semibold text-slate-800 text-sm">Change Password</h4>
-              <p className="text-xs text-slate-500 mt-1">Update your password to keep your account secure</p>
-            </div>
-            <Button className="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors font-medium text-sm">
-              Update
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200/60">
-            <div>
-              <h4 className="font-semibold text-slate-800 text-sm">Two-Factor Authentication</h4>
-              <p className="text-xs text-slate-500 mt-1">Add an extra layer of security to your account</p>
-            </div>
-            <Button className="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors font-medium text-sm">
-              Enable
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200/60">
-            <div>
-              <h4 className="font-semibold text-slate-800 text-sm">Active Sessions</h4>
-              <p className="text-xs text-slate-500 mt-1">Manage your active login sessions</p>
-            </div>
-            <Button className="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors font-medium text-sm">
-              View
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
