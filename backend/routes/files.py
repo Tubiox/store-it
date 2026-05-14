@@ -4,6 +4,7 @@ from io import BytesIO
 from routes.auth import get_current_user
 from services.storage import upload_file, download_file
 from utils.encryption import encrypt, decrypt
+from utils.gemini import generate_file_summary
 from bson import ObjectId
 from database import db, files_collection, shares_collection
 from auth_utils import decode_token
@@ -57,7 +58,9 @@ async def upload(
             "file_size": len(content),
             "content_type": file.content_type,
             "uploaded_at": datetime.utcnow(),
-            "is_deleted": False
+            "is_deleted": False,
+            "ai_summary": None,
+            "ai_summary_generated_at": None
         }
 
         db.files.insert_one(file_data)
@@ -684,3 +687,72 @@ def get_all_shares(user=Depends(get_current_user)):
         })
 
     return results
+
+
+# GENERATE AI SUMMARY
+@router.post("/generate-summary/{file_id}")
+async def generate_summary(
+    file_id: str,
+    current_user=Depends(get_current_user)
+):
+    """
+    Generate an AI summary for a file using Gemini API.
+    Caches the summary in the database for future retrieval.
+    """
+    try:
+        # Verify user owns the file
+        file = files_collection.find_one({"_id": ObjectId(file_id)})
+        
+        if not file:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        if str(file["owner_id"]) != str(current_user["_id"]):
+            raise HTTPException(status_code=403, detail="Not authorized to access this file")
+        
+        # Check if summary already cached
+        if file.get("ai_summary") is not None:
+            return {
+                "summary": file["ai_summary"],
+                "cached": True,
+                "generated_at": file.get("ai_summary_generated_at")
+            }
+        
+        # Download and decrypt file
+        encrypted_data = download_file(file["storage_key"])
+        decrypted_data = decrypt(encrypted_data)
+        
+        # Generate summary using Gemini
+        summary = await generate_file_summary(
+            decrypted_data,
+            file["content_type"],
+            file["filename"]
+        )
+        
+        # Cache the summary in database
+        files_collection.update_one(
+            {"_id": ObjectId(file_id)},
+            {
+                "$set": {
+                    "ai_summary": summary,
+                    "ai_summary_generated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {
+            "summary": summary,
+            "cached": False,
+            "generated_at": datetime.utcnow()
+        }
+    
+    except ValueError as e:
+        # File size or type error
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error generating summary: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate summary: {str(e)}"
+        )

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { User, Mail, Shield, Clock, Edit2, Save, X } from "lucide-react";
+import { User, Mail, Shield, Clock, Edit2, Save, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface UserData {
@@ -11,15 +11,17 @@ interface UserData {
   avatar?: string;
   accountId?: string;
   created_at?: string;
+  ai_summary_enabled?: boolean;
 }
 
 const Profile = () => {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ fullName: "" });
+  const [editData, setEditData] = useState({ fullName: "", ai_summary_enabled: true });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [togglingAISummary, setTogglingAISummary] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,7 +36,10 @@ const Profile = () => {
 
         const data = await res.json();
         setUser(data);
-        setEditData({ fullName: data.fullName });
+        setEditData({ 
+          fullName: data.fullName,
+          ai_summary_enabled: data.ai_summary_enabled ?? true
+        });
       } catch (err) {
         setError("Failed to load profile. Please try again.");
         console.error(err);
@@ -62,7 +67,10 @@ const Profile = () => {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ fullName: editData.fullName }),
+        body: JSON.stringify({ 
+          fullName: editData.fullName,
+          ai_summary_enabled: editData.ai_summary_enabled
+        }),
       });
 
       if (!res.ok) {
@@ -81,9 +89,52 @@ const Profile = () => {
   };
 
   const handleCancel = () => {
-    setEditData({ fullName: user?.fullName || "" });
+    setEditData({ 
+      fullName: user?.fullName || "",
+      ai_summary_enabled: user?.ai_summary_enabled ?? true
+    });
     setIsEditing(false);
     setError("");
+  };
+
+  const handleAISummaryToggle = async () => {
+    if (!user) return;
+    
+    setTogglingAISummary(true);
+    try {
+      setError("");
+      setSuccess("");
+      
+      const newValue = !user.ai_summary_enabled;
+      const res = await fetch("http://localhost:8000/auth/update-profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ 
+          ai_summary_enabled: newValue
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update AI summary setting");
+      }
+
+      const updatedUser = await res.json();
+      setUser(updatedUser);
+      setEditData({
+        ...editData,
+        ai_summary_enabled: updatedUser.ai_summary_enabled
+      });
+      setSuccess(`AI Summary ${newValue ? "enabled" : "disabled"} successfully!`);
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError("Failed to update AI summary setting. Please try again.");
+      console.error(err);
+    } finally {
+      setTogglingAISummary(false);
+    }
   };
 
   if (loading) {
@@ -166,7 +217,7 @@ const Profile = () => {
               <input
                 type="text"
                 value={editData.fullName}
-                onChange={(e) => setEditData({ fullName: e.target.value })}
+                onChange={(e) => setEditData({ ...editData, fullName: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all"
                 placeholder="Enter your full name"
               />
@@ -186,6 +237,38 @@ const Profile = () => {
               {user.email}
             </div>
             <p className="text-xs text-slate-500 mt-2">Email cannot be changed</p>
+          </div>
+
+          {/* AI Summary Toggle */}
+          <div className="pt-4 border-t border-slate-200/60">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200/60">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-800 text-sm">AI Summary</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {user.ai_summary_enabled ? "Enabled - Click AI button on files for summaries" : "Disabled - Enable to use AI summaries"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleAISummaryToggle}
+                disabled={togglingAISummary}
+                className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors ${
+                  user.ai_summary_enabled 
+                    ? "bg-indigo-600" 
+                    : "bg-slate-300"
+                } ${togglingAISummary ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:shadow-lg"}`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    user.ai_summary_enabled ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
 
           {/* Account ID */}

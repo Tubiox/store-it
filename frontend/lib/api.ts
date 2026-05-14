@@ -46,3 +46,9 @@ export const fetchWithAuth = async (
 
   return data;
 };
+
+export const generateFileSummary = async (fileId: string) => {
+  return fetchWithAuth(`/files/generate-summary/${fileId}`, {
+    method: "POST",
+  });
+};

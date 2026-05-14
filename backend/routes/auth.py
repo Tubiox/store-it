@@ -13,6 +13,9 @@ class User(BaseModel):
     email: str
     password: str
 
+class UpdateProfileRequest(BaseModel):
+    fullName: str = None
+    ai_summary_enabled: bool = None
 
 from fastapi import Request, HTTPException
 
@@ -72,7 +75,8 @@ def signup(user: User):
 
     users_collection.insert_one({
         "email": user.email,
-        "password": hashed
+        "password": hashed,
+        "ai_summary_enabled": True
     })
 
     return {"message": "Signup successful"}
@@ -132,4 +136,39 @@ def get_me(current_user=Depends(get_current_user)):
         "fullName": current_user.get("fullName", current_user["email"].split("@")[0]),
         "email": current_user["email"],
         "avatar": current_user.get("avatar", "https://i.pravatar.cc/150"),
+        "ai_summary_enabled": current_user.get("ai_summary_enabled", True),
+    }
+
+
+# UPDATE PROFILE
+@router.put("/update-profile")
+def update_profile(
+    request: UpdateProfileRequest,
+    current_user=Depends(get_current_user)
+):
+    update_data = {}
+    
+    if request.fullName is not None:
+        update_data["fullName"] = request.fullName
+    
+    if request.ai_summary_enabled is not None:
+        update_data["ai_summary_enabled"] = request.ai_summary_enabled
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    users_collection.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": update_data}
+    )
+    
+    updated_user = users_collection.find_one({"_id": current_user["_id"]})
+    
+    return {
+        "$id": str(updated_user["_id"]),
+        "accountId": str(updated_user["_id"]),
+        "fullName": updated_user.get("fullName", updated_user["email"].split("@")[0]),
+        "email": updated_user["email"],
+        "avatar": updated_user.get("avatar", "https://i.pravatar.cc/150"),
+        "ai_summary_enabled": updated_user.get("ai_summary_enabled", True),
     }

@@ -10,10 +10,12 @@ import {
   Pencil,
   Trash2,
   Info,
+  Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import FilePreviewModal from "@/components/FilePreviewModal";
-import { fetchWithAuth } from "@/lib/api";
+import SummaryPanel from "@/components/SummaryPanel";
+import { fetchWithAuth, generateFileSummary } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
 
@@ -41,6 +43,14 @@ const Card = ({
   const [isVisible, setIsVisible] = useState(true);
   const [expiry, setExpiry] = useState("1h");
   const [permission, setPermission] = useState("view");
+  
+  // AI Summary state
+  const [summaryPanelOpen, setSummaryPanelOpen] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summaryIsCached, setSummaryIsCached] = useState(false);
+  const [userAISummaryEnabled, setUserAISummaryEnabled] = useState(true);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -54,6 +64,25 @@ const Card = ({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Fetch user AI Summary preference
+  useEffect(() => {
+    const fetchUserPreference = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/auth/me", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const user = await response.json();
+          setUserAISummaryEnabled(user.ai_summary_enabled ?? true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user preference:", err);
+      }
+    };
+    
+    fetchUserPreference();
   }, []);
 
   // DELETE
@@ -176,6 +205,25 @@ const Card = ({
       console.error("Rename error:", err);
     } finally {
       setRenaming(false);
+    }
+  };
+
+  // AI SUMMARY
+  const handleGenerateSummary = async () => {
+    if (summaryLoading) return;
+
+    setSummaryLoading(true);
+    setSummaryError(null);
+    
+    try {
+      const data = await generateFileSummary(file._id);
+      setSummary(data.summary);
+      setSummaryIsCached(data.cached || false);
+      setSummaryPanelOpen(true);
+    } catch (err: any) {
+      setSummaryError(err.message || "Failed to generate summary");
+    } finally {
+      setSummaryLoading(false);
     }
   };
   // PREVIEW
@@ -310,6 +358,29 @@ const Card = ({
 
                 Share
               </button>
+
+              {/* AI SUMMARY - Only show if enabled */}
+              {userAISummaryEnabled && (
+                <button
+                  onClick={() => {
+                    handleGenerateSummary();
+                    setOpen(false);
+                  }}
+                  disabled={summaryLoading}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-neutral-700 transition-all duration-200 hover:bg-neutral-100 hover:scale-[1.02] disabled:opacity-50"
+                >
+                  <Zap
+                    size={18}
+                    style={{
+                      color: "#eab308",
+                      strokeWidth: 2.2,
+                      display: "block",
+                    }}
+                  />
+
+                  {summaryLoading ? "Generating..." : "AI Summary"}
+                </button>
+              )}
 
               {/* RENAME */}
               <button
@@ -722,6 +793,18 @@ const Card = ({
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
         file={file}
+      />
+
+      {/* SUMMARY PANEL */}
+      <SummaryPanel
+        isOpen={summaryPanelOpen}
+        isLoading={summaryLoading}
+        summary={summary}
+        error={summaryError}
+        fileName={file.filename}
+        onClose={() => setSummaryPanelOpen(false)}
+        onRetry={handleGenerateSummary}
+        isCached={summaryIsCached}
       />
     </>
   );
