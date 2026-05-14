@@ -5,7 +5,7 @@ import Image from "next/image";
 import { navItems } from "@/constants";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Shield, Folder, Link2, Clock, Settings, LogOut } from "lucide-react";
+import { Shield, Folder, Link2, Clock, Settings, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const iconMap: Record<string, any> = {
@@ -13,6 +13,7 @@ const iconMap: Record<string, any> = {
   "Shared Links": Link2,
   "Recent": Clock,
   "Settings": Settings,
+  "Profile": User,
 };
 
 const Sidebar = () => {

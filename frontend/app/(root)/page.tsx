@@ -52,7 +52,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">

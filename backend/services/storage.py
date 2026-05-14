@@ -4,13 +4,13 @@ from botocore.client import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="http://127.0.0.1:9000",
-    aws_access_key_id="minioadmin",
-    aws_secret_access_key="minioadmin",
-    region_name="us-east-1",
+    aws_access_key_id="b22ce4d8d16efef515ed6913a31649f8",
+    aws_secret_access_key="1ccb3bc856857f8f1e855f4196d2fee32fbb95abeb5cf75ec4d366455a634918",
+    endpoint_url="https://f718feec151f8c39383e7c6c5fb7ce8c.r2.cloudflarestorage.com",
+    region_name="auto",
     config=Config(signature_version="s3v4"),
 )
-BUCKET = "storeit"
+BUCKET = "adeeb"
 
 def ensure_bucket():
     try:

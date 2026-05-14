@@ -29,6 +29,11 @@ export const navItems = [
     icon: "/assets/icons/file-other.svg",
     url: "/others",
   },
+  {
+    name: "Profile",
+    icon: "/assets/icons/info.svg",
+    url: "/profile",
+  },
 ];
 
 export const actionsDropdownItems = [

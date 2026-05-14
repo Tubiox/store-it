@@ -14,13 +14,14 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import FileUploader from "@/components/FileUploader";
-import { Shield, Menu, Folder, Link2, Clock, Settings, LogOut, Upload } from "lucide-react";
+import { Shield, Menu, Folder, Link2, Clock, Settings, LogOut, Upload, User } from "lucide-react";
 
 const iconMap: Record<string, any> = {
   "Dashboard": Folder,
   "Shared Links": Link2,
   "Recent": Clock,
   "Settings": Settings,
+  "Profile": User,
 };
 
 const MobileNavigation = () => {

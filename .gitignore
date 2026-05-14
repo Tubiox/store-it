@@ -11,7 +11,12 @@ build/
 # Env files
 .env
 .env.local
-.pyc*
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.egg-info/
 # Logs
 npm-debug.log*
 yarn-debug.log*

@@ -73,15 +73,15 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200/60">
+      <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-indigo-600" />
+          <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-500/30">
+            <Shield className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+          <h1 className="text-2xl font-bold text-white mb-2">
             {type === "sign-in" ? "Welcome Back" : "Create Account"}
           </h1>
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-400 text-sm">
             {type === "sign-in"
               ? "Sign in to access your secure files"
               : "Start securing your files today"}
@@ -91,51 +91,51 @@ const AuthForm = ({ type }: { type: FormType }) => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           {type === "sign-up" && (
             <div>
-              <label className="text-sm font-medium text-slate-700 mb-2 block">
+              <label className="text-sm font-medium text-slate-300 mb-2 block">
                 Full Name
               </label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   {...form.register("fullName")}
                   placeholder="John Doe"
-                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-slate-800 placeholder:text-slate-400 font-medium"
+                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-white/10 bg-slate-800/50 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 outline-none transition-all font-medium"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="text-sm font-medium text-slate-700 mb-2 block">
+            <label className="text-sm font-medium text-slate-300 mb-2 block">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 {...form.register("email")}
                 type="email"
                 placeholder="name@company.com"
-                className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full h-12 pl-12 pr-4 rounded-xl border border-white/10 bg-slate-800/50 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 outline-none transition-all font-medium"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-slate-700 mb-2 block">
+            <label className="text-sm font-medium text-slate-300 mb-2 block">
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 {...form.register("password")}
                 type={showPassword ? "text" : "password"}
                 placeholder="Min 8 characters"
-                className="w-full h-12 pl-12 pr-14 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full h-12 pl-12 pr-14 rounded-xl border border-white/10 bg-slate-800/50 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 outline-none transition-all font-medium"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1"
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -150,7 +150,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
             <div className="flex justify-end">
               <Link
                 href="/forgot-password"
-                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                className="text-sm text-violet-400 hover:text-violet-300 font-medium transition-colors"
               >
                 Forgot Password?
               </Link>
@@ -158,7 +158,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
           )}
 
           {errorMessage && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm text-center py-3 px-4 rounded-xl">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center py-3 px-4 rounded-xl">
               {errorMessage}
             </div>
           )}
@@ -166,7 +166,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25"
+            className="w-full h-12 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-violet-500/25"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -200,27 +200,27 @@ const AuthForm = ({ type }: { type: FormType }) => {
         </form>
 
         <div className="mt-8 text-center">
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-400 text-sm">
             {type === "sign-in"
               ? "Don't have an account?"
               : "Already have an account?"}{" "}
             <Link
               href={type === "sign-in" ? "/sign-up" : "/sign-in"}
-              className="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+              className="text-violet-400 hover:text-violet-300 font-semibold transition-colors"
             >
               {type === "sign-in" ? "Sign Up" : "Sign In"}
             </Link>
           </p>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-slate-100">
-          <p className="text-xs text-slate-400 text-center">
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <p className="text-xs text-slate-500 text-center">
             By continuing, you agree to our{" "}
-            <Link href="/terms" className="text-indigo-600 hover:underline">
+            <Link href="/terms" className="text-violet-400 hover:underline">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="text-indigo-600 hover:underline">
+            <Link href="/privacy" className="text-violet-400 hover:underline">
               Privacy Policy
             </Link>
           </p>

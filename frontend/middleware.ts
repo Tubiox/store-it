@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
+const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/landing"];
 
 export async function middleware(request: NextRequest) {
   const { pathname, origin } = request.nextUrl;
@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
   if (!hasCookie) {
     if (isPublic) return NextResponse.next();
 
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    return NextResponse.redirect(new URL("/landing", request.url));
   }
 
   try {
@@ -30,18 +30,20 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
+      return NextResponse.redirect(new URL("/landing", request.url));
     }
 
-    // 🔁 If logged in and visiting auth pages → redirect
-    if (isPublic) {
+    // If logged in and visiting auth pages (except /landing) → redirect
+    if (isPublic && pathname !== "/landing") {
       return NextResponse.redirect(new URL("/", request.url));
     }
+
+    // If logged in and visiting /landing → allow (don't redirect)
 
     return NextResponse.next();
 
   } catch {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    return NextResponse.redirect(new URL("/landing", request.url));
   }
 }
 
