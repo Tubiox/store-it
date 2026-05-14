@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 from google import genai
+from google.genai import types
 import base64
 from io import BytesIO
 import asyncio
@@ -95,10 +96,7 @@ async def generate_file_summary(
                     model=MODEL_NAME,
                     contents=[
                         prompt,
-                        {
-                            "mime_type": content_type,
-                            "data": file_content
-                        }
+                        types.Part.from_bytes(data=file_content, mime_type=content_type)
                     ]
                 )
             
@@ -116,10 +114,7 @@ async def generate_file_summary(
                     model=MODEL_NAME,
                     contents=[
                         prompt + truncation_note,
-                        {
-                            "mime_type": "application/pdf",
-                            "data": file_content_truncated
-                        }
+                        types.Part.from_bytes(data=file_content_truncated, mime_type="application/pdf")
                     ]
                 )
             
@@ -145,10 +140,7 @@ async def generate_file_summary(
                             model=MODEL_NAME,
                             contents=[
                                 prompt + " (Note: File is binary/encoded)",
-                                {
-                                    "mime_type": content_type or "application/octet-stream",
-                                    "data": file_content
-                                }
+                                types.Part.from_bytes(data=file_content, mime_type=content_type or "application/octet-stream")
                             ]
                         )
                 

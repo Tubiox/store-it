@@ -47,7 +47,7 @@ const MobileNavigation = () => {
         <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
           <Shield className="w-5 h-5 text-white" />
         </div>
-        <span className="text-lg font-bold text-slate-800">StoreIt</span>
+        <span className="text-lg font-bold text-slate-800">SecureIt</span>
       </Link>
 
       <Sheet open={open} onOpenChange={setOpen}>
@@ -64,7 +64,7 @@ const MobileNavigation = () => {
                 <Shield className="w-6 h-6 text-indigo-600" />
               </div>
               <div>
-                <p className="font-semibold text-slate-800">StoreIt</p>
+                <p className="font-semibold text-slate-800">SecureIt</p>
                 <p className="text-xs text-slate-500">Secure Cloud Storage</p>
               </div>
             </div>

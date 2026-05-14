@@ -39,7 +39,7 @@ const Sidebar = () => {
           <div className="w-11 h-11 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
             <Shield className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-xl font-bold text-slate-800">StoreIt</h1>
+          <h1 className="text-xl font-bold text-slate-800">SecureIt</h1>
         </div>
       </Link>
 
