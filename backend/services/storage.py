@@ -3,9 +3,12 @@ import boto3
 
 from botocore.client import Config
 
+_minio_endpoint = os.getenv("MINIO_ENDPOINT", "localhost:9000")
+_endpoint_url = f"http://{_minio_endpoint}" if not _minio_endpoint.startswith("http") else _minio_endpoint
+
 s3 = boto3.client(
     "s3",
-    endpoint_url="http://127.0.0.1:9000",
+    endpoint_url=_endpoint_url,
     aws_access_key_id=os.getenv("MINIO_ACCESS_KEY"),
     aws_secret_access_key=os.getenv("MINIO_SECRET_KEY"),
     region_name="us-east-1",

@@ -21,8 +21,9 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // 🔥 Step 2: Validate with backend
-    const res = await fetch(`${origin}/api/auth/me`, {
+    // 🔥 Step 2: Validate with backend directly (bypass nginx to avoid loops)
+    const backendUrl = process.env.BACKEND_URL || "http://127.0.0.1:8000";
+    const res = await fetch(`${backendUrl}/auth/me`, {
       method: "GET",
       headers: {
         cookie: request.headers.get("cookie") || "",
