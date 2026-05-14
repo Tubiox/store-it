@@ -26,3 +26,14 @@ async def send_share_email(email: EmailStr, link: str):
 
     fm = FastMail(conf)
     await fm.send_message(message)
+
+async def send_otp_email(email: EmailStr, otp: str):
+    message = MessageSchema(
+        subject="Your SecureIt Verification OTP",
+        recipients=[email],
+        body=f"Welcome to SecureIt!\n\nYour One-Time Password (OTP) for account verification is:\n\n{otp}\n\nThis OTP is valid for 5 minutes. If you did not sign up for this account, please ignore this email.",
+        subtype="plain"
+    )
+
+    fm = FastMail(conf)
+    await fm.send_message(message)

@@ -157,6 +157,8 @@ def get_files(current_user=Depends(get_current_user)):
         for file in files:
             file["_id"] = str(file["_id"])
             file["owner_id"] = str(file["owner_id"])
+            if "file_size" in file:
+                file["size"] = file["file_size"]
 
         return {
     "documents": files,

@@ -1,9 +1,12 @@
-from fastapi import Depends, APIRouter, HTTPException, Header, Response, Request
+from fastapi import Depends, APIRouter, HTTPException, Header, Response, Request, BackgroundTasks
 import secrets
+import random
+from datetime import datetime, timedelta
 from pydantic import BaseModel
-from database import users_collection
+from database import users_collection, otps_collection
 from auth_utils import hash_password, verify_password, create_access_token, decode_token
 from auth_utils import ACCESS_TOKEN_EXPIRE_MINUTES
+from utils.email import send_otp_email
 
 router = APIRouter(prefix="/auth")
 
@@ -63,9 +66,13 @@ def get_current_user(request: Request):
 
     return user
 
+class OTPVerify(BaseModel):
+    email: str
+    otp: str
+
 # SIGNUP
 @router.post("/signup")
-def signup(user: User):
+def signup(user: User, background_tasks: BackgroundTasks):
     existing = users_collection.find_one({"email": user.email})
 
     if existing:
@@ -73,13 +80,53 @@ def signup(user: User):
 
     hashed = hash_password(user.password)
 
+    # Insert unverified user
     users_collection.insert_one({
         "email": user.email,
         "password": hashed,
+        "is_verified": False,
         "ai_summary_enabled": True
     })
 
-    return {"message": "Signup successful"}
+    # Generate a 6-digit OTP
+    otp = str(random.randint(100000, 999999))
+    
+    # Store OTP in DB with an expiration time
+    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    otps_collection.update_one(
+        {"email": user.email},
+        {"$set": {"otp": otp, "expires_at": expires_at}},
+        upsert=True
+    )
+    
+    background_tasks.add_task(send_otp_email, user.email, otp)
+
+    return {"message": "OTP sent to email", "require_otp": True}
+
+
+@router.post("/verify-signup-otp")
+def verify_signup_otp(data: OTPVerify):
+    record = otps_collection.find_one({"email": data.email})
+    
+    if not record:
+        raise HTTPException(status_code=400, detail="No OTP found. Please sign up again.")
+        
+    if record["otp"] != data.otp:
+        raise HTTPException(status_code=401, detail="Invalid OTP")
+        
+    if record["expires_at"] < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="OTP expired")
+        
+    # Mark user as verified
+    users_collection.update_one(
+        {"email": data.email},
+        {"$set": {"is_verified": True}}
+    )
+
+    # Delete the OTP record
+    otps_collection.delete_one({"email": data.email})
+    
+    return {"message": "Account verified successfully"}
 
 
 # LOGIN
@@ -92,19 +139,22 @@ def login(user: User, response: Response):
 
     if not verify_password(user.password, existing["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    if not existing.get("is_verified", False):
+        raise HTTPException(status_code=403, detail="Please verify your email first. Check your inbox.")
 
     csrf_token = secrets.token_urlsafe(32)
     token = create_access_token({"sub": user.email, "csrf": csrf_token})
 
     response.set_cookie(
-    key="access_token",
-    value=token,
-    httponly=True,
-    samesite="lax",
-    secure=False,
-    max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-    path="/"
-)
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/"
+    )
 
     response.set_cookie(
         key="csrf_token",
