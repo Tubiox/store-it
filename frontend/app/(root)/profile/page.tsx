@@ -36,7 +36,7 @@ const Profile = () => {
 
         const data = await res.json();
         setUser(data);
-        setEditData({ 
+        setEditData({
           fullName: data.fullName,
           ai_summary_enabled: data.ai_summary_enabled ?? true
         });
@@ -67,7 +67,7 @@ const Profile = () => {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           fullName: editData.fullName,
           ai_summary_enabled: editData.ai_summary_enabled
         }),
@@ -89,7 +89,7 @@ const Profile = () => {
   };
 
   const handleCancel = () => {
-    setEditData({ 
+    setEditData({
       fullName: user?.fullName || "",
       ai_summary_enabled: user?.ai_summary_enabled ?? true
     });
@@ -99,12 +99,12 @@ const Profile = () => {
 
   const handleAISummaryToggle = async () => {
     if (!user) return;
-    
+
     setTogglingAISummary(true);
     try {
       setError("");
       setSuccess("");
-      
+
       const newValue = !user.ai_summary_enabled;
       const res = await fetch("http://localhost:8000/auth/update-profile", {
         method: "PUT",
@@ -112,7 +112,7 @@ const Profile = () => {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           ai_summary_enabled: newValue
         }),
       });
@@ -256,16 +256,14 @@ const Profile = () => {
               <button
                 onClick={handleAISummaryToggle}
                 disabled={togglingAISummary}
-                className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors ${
-                  user.ai_summary_enabled 
-                    ? "bg-indigo-600" 
+                className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors ${user.ai_summary_enabled
+                    ? "bg-indigo-600"
                     : "bg-slate-300"
-                } ${togglingAISummary ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:shadow-lg"}`}
+                  } ${togglingAISummary ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:shadow-lg"}`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    user.ai_summary_enabled ? "translate-x-6" : "translate-x-1"
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.ai_summary_enabled ? "translate-x-6" : "translate-x-1"
+                    }`}
                 />
               </button>
             </div>
@@ -285,12 +283,12 @@ const Profile = () => {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Account Created</label>
             <div className="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-700 font-medium flex items-center gap-2">
               <Clock className="w-5 h-5 text-slate-400" />
-              {user.created_at 
-                ? new Date(user.created_at).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })
+              {user.created_at
+                ? new Date(user.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })
                 : 'N/A'
               }
             </div>

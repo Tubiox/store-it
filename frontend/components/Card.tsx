@@ -43,7 +43,7 @@ const Card = ({
   const [isVisible, setIsVisible] = useState(true);
   const [expiry, setExpiry] = useState("1h");
   const [permission, setPermission] = useState("view");
-  
+
   // AI Summary state
   const [summaryPanelOpen, setSummaryPanelOpen] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -81,7 +81,7 @@ const Card = ({
         console.error("Failed to fetch user preference:", err);
       }
     };
-    
+
     fetchUserPreference();
   }, []);
 
@@ -214,7 +214,7 @@ const Card = ({
 
     setSummaryLoading(true);
     setSummaryError(null);
-    
+
     try {
       const data = await generateFileSummary(file._id);
       setSummary(data.summary);
