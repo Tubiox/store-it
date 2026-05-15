@@ -7,7 +7,7 @@ const features = [
   {
     icon: Shield,
     title: "Encrypted Storage",
-    description: "Your files are encrypted with AES-256 bit encryption before they leave your device. Only you have the keys.",
+    description: "Your files are encrypted with AES-128 bit encryption before they leave your device. Only you have the keys.",
     color: "violet",
   },
   {

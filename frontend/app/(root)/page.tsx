@@ -71,7 +71,7 @@ const Dashboard = () => {
               <Shield className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-slate-800">256-bit</p>
+              <p className="text-2xl font-bold text-slate-800">128-bit</p>
               <p className="text-xs text-slate-500">Encryption</p>
             </div>
           </div>

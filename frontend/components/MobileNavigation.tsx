@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import FileUploader from "@/components/FileUploader";
 import { Shield, Menu, Folder, Link2, Clock, Settings, LogOut, Upload, User } from "lucide-react";
+import { signOut } from "@/lib/auth";
 
 const iconMap: Record<string, any> = {
   "Dashboard": Folder,
@@ -29,16 +30,7 @@ const MobileNavigation = () => {
   const pathname = usePathname();
 
   const handleLogout = async () => {
-    try {
-      await fetch("http://localhost:8000/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
-
-    window.location.href = "/sign-in";
+    await signOut();
   };
 
   return (

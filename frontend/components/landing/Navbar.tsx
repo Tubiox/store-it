@@ -71,13 +71,6 @@ export default function Navbar() {
             >
               Sign In
             </Link>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-blue-600 rounded-full shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all"
-            >
-              Get Started
-            </motion.button>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -119,9 +112,6 @@ export default function Navbar() {
                 >
                   Sign In
                 </Link>
-                <button className="w-full py-3 text-base font-bold text-white bg-gradient-to-r from-violet-600 to-blue-600 rounded-full shadow-lg">
-                  Get Started
-                </button>
               </div>
             </div>
           </motion.div>

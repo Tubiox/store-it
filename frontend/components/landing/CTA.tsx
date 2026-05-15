@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, Shield } from "lucide-react";
+import Link from "next/link";
 
 export default function CTA() {
   return (
@@ -20,13 +21,6 @@ export default function CTA() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/20 backdrop-blur-sm mb-8 border border-white/30">
-            <Shield className="size-5 text-white" />
-            <span className="text-sm font-bold text-white">
-              14-day free trial • No credit card required
-            </span>
-          </div>
-
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
             Ready to secure your files?
           </h2>
@@ -36,21 +30,16 @@ export default function CTA() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 30px 60px rgba(0,0,0,0.3)" }}
-              whileTap={{ scale: 0.95 }}
-              className="group inline-flex items-center justify-center gap-2 px-10 py-5 text-lg font-bold text-violet-700 bg-white rounded-full shadow-2xl hover:shadow-3xl transition-all"
-            >
-              Start Free Trial
-              <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)" }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center justify-center gap-2 px-10 py-5 text-lg font-bold text-white border-2 border-white/40 rounded-full transition-all"
-            >
-              Contact Sales
-            </motion.button>
+            <Link href="/sign-in">
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: "0 30px 60px rgba(0,0,0,0.3)" }}
+                whileTap={{ scale: 0.95 }}
+                className="group inline-flex items-center justify-center gap-2 px-10 py-5 text-lg font-bold text-violet-700 bg-white rounded-full shadow-2xl hover:shadow-3xl transition-all w-full sm:w-auto"
+              >
+                Start Free Trial
+                <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
           </div>
         </motion.div>
       </div>

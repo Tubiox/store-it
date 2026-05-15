@@ -1,23 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Shield, Key, Users, Server, CheckCircle2, Lock } from "lucide-react";
+import { Shield, Server, CheckCircle2, Lock } from "lucide-react";
 
 const securityFeatures = [
   {
     icon: Shield,
-    title: "AES-256 Encryption",
+    title: "AES-128 Encryption",
     description: "Military-grade encryption standard used by governments and banks worldwide.",
-  },
-  {
-    icon: Key,
-    title: "Zero-Knowledge Architecture",
-    description: "We never see your encryption keys. Your data is encrypted before it reaches our servers.",
-  },
-  {
-    icon: Users,
-    title: "Multi-Factor Auth",
-    description: "Secure your account with TOTP, SMS, or hardware keys.",
   },
   {
     icon: Server,
@@ -48,7 +38,7 @@ export default function Security() {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
             Built with security first
           </h2>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             Enterprise-grade security for everyone. Your files are protected by the same
             encryption standards used by governments and financial institutions.
           </p>
@@ -76,7 +66,7 @@ export default function Security() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-1">{feature.title}</h3>
-                  <p className="text-gray-400">{feature.description}</p>
+                  <p className="text-slate-300 leading-relaxed">{feature.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -112,13 +102,13 @@ export default function Security() {
 
               <div className="grid grid-cols-3 gap-4">
                 {[
-                  { value: "256", label: "Bit Encryption" },
+                  { value: "128", label: "Bit Encryption" },
                   { value: "0", label: "Data Breaches" },
                   { value: "100%", label: "Uptime SLA" },
                 ].map((stat, i) => (
                   <div key={i} className="text-center p-4 rounded-xl bg-white/5">
                     <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                    <div className="text-sm text-gray-400">{stat.label}</div>
+                    <div className="text-sm text-slate-300">{stat.label}</div>
                   </div>
                 ))}
               </div>

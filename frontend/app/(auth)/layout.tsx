@@ -25,7 +25,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
               <FileText className="w-8 h-8 text-violet-400 mb-3" />
-              <div className="text-2xl font-bold text-white">256-bit</div>
+              <div className="text-2xl font-bold text-white">128-bit</div>
               <div className="text-sm text-slate-400">AES Encryption</div>
             </div>
             <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">

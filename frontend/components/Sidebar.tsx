@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Shield, Folder, Link2, Clock, Settings, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { signOut } from "@/lib/auth";
 
 const iconMap: Record<string, any> = {
   "Dashboard": Folder,
@@ -20,16 +21,7 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   const handleLogout = async () => {
-    try {
-      await fetch("http://localhost:8000/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
-
-    window.location.href = "/sign-in";
+    await signOut();
   };
 
   return (

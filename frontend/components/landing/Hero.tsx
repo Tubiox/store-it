@@ -59,7 +59,7 @@ export default function Hero() {
               className="mt-16 grid grid-cols-3 gap-8 max-w-md mx-auto lg:mx-0"
             >
               {[
-                { icon: Shield, label: "256-bit", sublabel: "Encryption" },
+                { icon: Shield, label: "128-bit", sublabel: "Encryption" },
                 { icon: Zap, label: "99.9%", sublabel: "Uptime" },
                 { icon: Users, label: "50K+", sublabel: "Users" },
               ].map((stat, index) => (

@@ -257,7 +257,7 @@ async def create_share(
 }
 
     shares_collection.insert_one(share)
-    link = f"http://localhost:3000/shared/{token}"
+    link = f"http://107.22.44.43/shared/{token}"
 
     background_tasks.add_task(send_share_email, email, link)
     

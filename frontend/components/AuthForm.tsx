@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Lock, Mail, User, Shield, CheckCircle2 } from "lucide-react";
+import { Loader2, Mail, Lock, User, Eye, EyeOff, AlertCircle, Shield, CheckCircle2 } from "lucide-react";
 
 type FormType = "sign-in" | "sign-up";
 
@@ -145,7 +145,8 @@ const AuthForm = ({ type }: { type: FormType }) => {
             </div>
 
             {errorMessage && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center py-3 px-4 rounded-xl">
+              <div className="bg-red-500/15 border border-red-500/30 text-rose-400 text-sm font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2">
+                <AlertCircle className="size-4" />
                 {errorMessage}
               </div>
             )}
@@ -263,7 +264,8 @@ const AuthForm = ({ type }: { type: FormType }) => {
           )}
 
           {errorMessage && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center py-3 px-4 rounded-xl">
+            <div className="bg-red-500/15 border border-red-500/30 text-rose-400 text-sm font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2">
+              <AlertCircle className="size-4" />
               {errorMessage}
             </div>
           )}

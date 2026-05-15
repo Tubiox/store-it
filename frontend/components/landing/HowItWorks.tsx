@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Upload, Lock, Share2, CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 const steps = [
   {
@@ -13,7 +14,7 @@ const steps = [
   {
     icon: Lock,
     title: "Automatic Encryption",
-    description: "Files are encrypted client-side before upload. AES-256 encryption ensures only you can access your data.",
+    description: "Files are encrypted client-side before upload. AES-128 encryption ensures only you can access your data.",
     color: "blue",
   },
   {
@@ -105,13 +106,15 @@ export default function HowItWorks() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center mt-16"
         >
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 20px 50px rgba(139, 92, 246, 0.4)" }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 rounded-full shadow-lg shadow-violet-500/40 transition-all"
-          >
-            Start Free Trial
-          </motion.button>
+          <Link href="/sign-in">
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 20px 50px rgba(139, 92, 246, 0.4)" }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-2 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 rounded-full shadow-lg shadow-violet-500/40 transition-all"
+            >
+              Start Free Trial
+            </motion.button>
+          </Link>
         </motion.div>
       </div>
     </section>
